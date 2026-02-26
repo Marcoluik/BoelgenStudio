@@ -1,0 +1,27 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navigation from "../components/Navigation.astro";
+import Hero from "../components/Hero.astro";
+import Collection from "../components/Collection.astro";
+import StudioFeed from "../components/StudioFeed.astro";
+---
+
+<Layout title="Bølgen | Cinema">
+  <Navigation />
+
+  <main class="relative z-10">
+    <Hero />
+    <div id="shop">
+      <Collection />
+    </div>
+    <StudioFeed />
+  </main>
+</Layout>
+
+<style>
+  /* Hide scrollbar for cleaner look if needed */
+  ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+</style>

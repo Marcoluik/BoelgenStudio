@@ -1,0 +1,210 @@
+---
+import { products } from "./products.astro";
+---
+
+{/* Spacer to let hero be visible before collection scrolls up */}
+<div class="h-screen pointer-events-none"></div>
+
+<section
+  class="collection-section relative z-10 pt-64 pb-32 md:pt-96 md:pb-64 overflow-hidden bg-transparent"
+>
+  <div
+    class="archive-bg fixed inset-0 pointer-events-none opacity-0 z-0 bg-[#000d12] backdrop-blur-xl"
+  >
+    <div
+      class="absolute top-[-10%] left-[20%] w-[60%] h-[60%] bg-cyan-400/10 blur-[150px] rounded-full"
+    >
+    </div>
+    <div
+      class="absolute bottom-[20%] right-[10%] w-[50%] h-[50%] bg-blue-300/5 blur-[120px] rounded-full"
+    >
+    </div>
+    <div
+      class="absolute top-[40%] left-[-10%] w-[40%] h-[40%] bg-cyan-600/5 blur-[100px] rounded-full"
+    >
+    </div>
+  </div>
+
+  <div class="container mx-auto px-6 relative z-10">
+    {/* Section Title - Huge and Cinematic */}
+    <div class="archive-header mb-32 md:mb-72 overflow-hidden">
+      <h2
+        class="text-cyan-100/[0.05] text-[15vw] font-thin uppercase tracking-[0.4em] leading-none select-none mb-[-4vw] whitespace-nowrap"
+      >
+        Archive
+      </h2>
+      <div class="flex items-center gap-6 mt-12 mb-4 ml-4">
+        <div class="h-[1px] w-24 bg-cyan-500/30"></div>
+        <p
+          class="text-cyan-100/30 text-[10px] tracking-[0.8em] uppercase font-light"
+        >
+          Permanent / 01
+        </p>
+      </div>
+    </div>
+
+    <div class="space-y-64 md:space-y-[40rem]">
+      {
+        products.map((product, index) => (
+          <div
+            class={`product-row flex flex-col ${index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"} items-center gap-16 md:gap-32`}
+          >
+            {/* Main Visual Container */}
+            <div class="w-full md:w-3/5 relative group">
+              <a
+                href={`/product/${product.id}`}
+                class="block relative overflow-hidden rounded-sm bg-[#051117]"
+              >
+                <div class="aspect-[4/5] md:aspect-[16/10] overflow-hidden">
+                  {/* Main Image */}
+                  <img
+                    src={product.mainImage}
+                    alt={product.name}
+                    class="absolute inset-0 w-full h-full object-cover transition-all duration-[2.5s] ease-out scale-105 group-hover:scale-110 opacity-100 group-hover:opacity-0"
+                  />
+                  {/* Back Image (Revealed on hover) */}
+                  <img
+                    src={product.backImage}
+                    alt={`${product.name} alternate view`}
+                    class="absolute inset-0 w-full h-full object-cover transition-all duration-[2.5s] ease-out scale-110 group-hover:scale-100 opacity-0 group-hover:opacity-100"
+                  />
+
+                  {/* The Dark Overlay for depth - Cyan Tinted */}
+                  <div class="absolute inset-0 bg-gradient-to-t from-[#000d12]/80 via-transparent to-transparent opacity-60" />
+                </div>
+
+                {/* Hover Interaction Overlay */}
+                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-1000 backdrop-blur-[4px]">
+                  <div class="px-10 py-4 border border-cyan-400/30 rounded-full text-white text-[10px] tracking-[0.5em] uppercase bg-[#001c25]/40 backdrop-blur-md">
+                    View Specification
+                  </div>
+                </div>
+              </a>
+
+              {/* Floating Index Number - Cinematic Detail */}
+              <div
+                class={`absolute top-0 ${index % 2 === 0 ? "-left-8 md:-left-16" : "-right-8 md:-right-16"} -translate-y-1/2`}
+              >
+                <span class="text-cyan-100/[0.08] text-9xl font-thin tracking-tighter pointer-events-none">
+                  0{index + 1}
+                </span>
+              </div>
+
+              {/* Overlapping Piece Name - Cinematic Style */}
+              <div
+                class={`hidden lg:block absolute bottom-12 ${index % 2 === 0 ? "-right-24" : "-left-24"} mix-blend-screen pointer-events-none transition-transform duration-1000 group-hover:translate-y-[-10px]`}
+              >
+                <h3 class="text-cyan-50/70 text-7xl xl:text-8xl font-thin tracking-tighter uppercase leading-none">
+                  {product.name.split(" ")[1]}
+                </h3>
+              </div>
+            </div>
+
+            {/* Product Description Side */}
+            <div class="w-full md:w-2/5 space-y-10">
+              <div class="space-y-6">
+                <div class="flex items-center gap-4">
+                  <span class="w-8 h-[1px] bg-cyan-700" />
+                  <span class="text-cyan-400/60 text-[10px] tracking-[0.6em] font-medium uppercase">
+                    Selection {index + 1}
+                  </span>
+                </div>
+                <h4 class="text-white text-4xl lg:text-6xl font-extralight tracking-[0.1em] uppercase leading-tight">
+                  {product.subName}
+                </h4>
+                <div class="w-16 h-[1px] bg-cyan-500/20" />
+              </div>
+
+              <p class="text-cyan-100/50 text-base leading-relaxed tracking-wide font-light max-w-sm">
+                {product.description}
+              </p>
+
+              <div class="flex items-baseline gap-8">
+                <span class="text-white text-2xl font-light tracking-widest">
+                  {product.price}
+                </span>
+                <a
+                  href={`/product/${product.id}`}
+                  class="group/link flex items-center gap-4 text-cyan-400/40 hover:text-cyan-100 transition-colors duration-500 text-[10px] tracking-[0.4em] uppercase"
+                >
+                  Details
+                  <div class="w-12 h-[1px] bg-cyan-500/10 group-hover/link:bg-cyan-400/60 group-hover/link:w-20 transition-all duration-700" />
+                </a>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="mt-64"></div>
+  </div>
+</section>
+
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Fade in fixed background on scroll
+  gsap.to(".archive-bg", {
+    scrollTrigger: {
+      trigger: "body",
+      start: "20% top",
+      end: "50% top",
+      scrub: true,
+    },
+    opacity: 1,
+  });
+
+  // Entrance animation for the Archive Header
+  gsap.from(".archive-header > *", {
+    scrollTrigger: {
+      trigger: ".archive-header",
+      start: "top 90%",
+    },
+    y: 50,
+    opacity: 0,
+    duration: 2,
+    stagger: 0.2,
+    ease: "expo.out",
+  });
+
+  // Entrance animations (Stable - no movement)
+  const rows = document.querySelectorAll(".product-row");
+
+  rows.forEach((row, i) => {
+    const isEven = i % 2 === 0;
+    const visual = row.querySelector(".w-full.md\\:w-3\\/5");
+    const content = row.querySelector(".w-full.md\\:w-2\\/5");
+
+    // Entrance for the visual part
+    gsap.from(visual, {
+      scrollTrigger: {
+        trigger: row,
+        start: "top 80%",
+      },
+      opacity: 0,
+      duration: 2.5,
+      ease: "expo.out",
+    });
+
+    // Entrance for the content part
+    gsap.from(content, {
+      scrollTrigger: {
+        trigger: row,
+        start: "top 70%",
+      },
+      opacity: 0,
+      duration: 2.5,
+      delay: 0.4,
+      ease: "expo.out",
+    });
+  });
+</script>
+
+<style>
+  .product-row {
+    will-change: transform, opacity;
+  }
+</style>

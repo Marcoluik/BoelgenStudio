@@ -1,0 +1,93 @@
+---
+
+---
+
+<section
+  class="hero-container fixed inset-0 w-full h-screen z-0 overflow-hidden"
+>
+  <div class="absolute inset-0 h-full w-full pointer-events-none">
+    <video
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="auto"
+      class="hero-media block w-full h-full object-cover"
+      id="hero-video"
+    >
+      <source src="/hero-video.mp4" type="video/mp4" />
+    </video>
+
+    <img
+      src="/hero-2-Gv_c13hE.jpeg"
+      alt="Ocean"
+      class="hero-media hidden w-full h-full object-cover"
+    />
+
+    <div
+      class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40"
+    >
+    </div>
+  </div>
+
+  <div
+    class="hero-content relative z-50 flex flex-col items-center justify-center h-full text-center px-6"
+  >
+    <img
+      src="/logo-bolgen.svg"
+      alt="Bølgen"
+      class="h-32 md:h-48 mb-8 brightness-0 invert drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]"
+    />
+
+    <h1
+      class="text-white text-lg md:text-2xl font-extralight tracking-[0.3em] uppercase mb-12"
+    >
+      Sommer <span class="mx-4 text-white/40">•</span> Dybde <span
+        class="mx-4 text-white/40">•</span
+      > Kulde
+    </h1>
+
+    <a
+      href="#shop"
+      class="group relative px-12 py-4 overflow-hidden border border-white/20 hover:border-white/60 transition-colors duration-500 rounded-full pointer-events-auto cursor-pointer backdrop-blur-sm"
+    >
+      <span
+        class="relative z-10 text-white text-xs tracking-[0.2em] font-light uppercase group-hover:text-cyan-50 transition-colors"
+        >Dyk Ned</span
+      >
+      <div
+        class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"
+      >
+      </div>
+    </a>
+  </div>
+</section>
+
+<script>
+  import gsap from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Blur hero on scroll (Stable - no movement/scale)
+  gsap.to(".hero-media", {
+    scrollTrigger: {
+      trigger: "body",
+      start: "top top",
+      end: "50% top",
+      scrub: true,
+    },
+    filter: "blur(40px)",
+    opacity: 0.4,
+  });
+
+  // Fade out hero content on scroll (Stable - no movement)
+  gsap.to(".hero-content", {
+    scrollTrigger: {
+      trigger: "body",
+      start: "top top",
+      end: "30% top",
+      scrub: true,
+    },
+    opacity: 0,
+  });
+</script>

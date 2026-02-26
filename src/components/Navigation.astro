@@ -1,0 +1,111 @@
+---
+interface Props {
+  theme?: "dark" | "light";
+}
+
+const { theme = "dark" } = Astro.props;
+
+const pathname = new URL(Astro.request.url).pathname;
+const isShop = pathname === "/shop";
+
+const isDark = theme === "dark";
+const textColor = isDark ? "text-white/80" : "text-stone-600";
+const hoverColor = isDark ? "hover:text-white" : "hover:text-black";
+const logoBrightness = isDark ? "brightness-0 invert" : "brightness-0";
+const underlineColor = isDark ? "bg-white/60" : "bg-stone-800";
+---
+
+<nav
+  class={`fixed top-0 left-0 right-0 z-50 px-6 md:px-12 py-5 md:py-6 flex items-center justify-between transition-all duration-700 ${isDark ? "bg-gradient-to-b from-black/40 via-black/15 to-transparent" : "bg-gradient-to-b from-white/40 via-white/15 to-transparent"}`}
+>
+  <!-- Left Navigation -->
+  <div class="flex items-center gap-8 md:gap-12 lg:gap-16">
+    <a
+      href="/#shop"
+      class={`${textColor} ${hoverColor} transition-all duration-300 font-light text-xs md:text-sm tracking-[0.1em] uppercase relative group shop-link`}
+    >
+      Kollektion
+      <span
+        class={`absolute -bottom-1 left-0 h-[1px] ${underlineColor} transition-all duration-500 w-0 group-hover:w-full`}
+      ></span>
+    </a>
+    <a
+      href="/"
+      class={`${textColor} ${hoverColor} transition-all duration-300 font-light text-xs md:text-sm tracking-[0.1em] uppercase relative group`}
+    >
+      Hjem
+      <span
+        class={`absolute -bottom-1 left-0 h-[1px] ${underlineColor} transition-all duration-500 ${pathname === "/" ? "w-full" : "w-0 group-hover:w-full"}`}
+      ></span>
+    </a>
+  </div>
+
+  <!-- Center Logo -->
+  <div class="absolute left-1/2 -translate-x-1/2 hidden md:block">
+    <a
+      href="/"
+      class="block transition-all duration-500 hover:opacity-80 group"
+    >
+      <img
+        src="/logo-bolgen.svg"
+        alt="Bølgen Studio"
+        class={`h-8 md:h-10 lg:h-12 w-auto ${logoBrightness} opacity-90 group-hover:opacity-100 transition-opacity duration-300`}
+      />
+    </a>
+  </div>
+
+  <!-- Right Navigation -->
+  <div class="flex items-center gap-6 md:gap-8">
+    <a
+      href="https://instagram.com/boelgen.studio"
+      target="_blank"
+      rel="noopener noreferrer"
+      class={`${textColor} ${hoverColor} transition-all duration-300 group`}
+      aria-label="Instagram"
+    >
+      <img
+        src="/logo-instagram.svg"
+        alt="Instagram"
+        class={`w-5 h-5 md:w-6 md:h-6 ${logoBrightness} opacity-80 group-hover:opacity-100 transition-opacity duration-300`}
+      />
+    </a>
+    <button
+      class={`${textColor} hover:text-cyan-400 transition-all duration-500 relative group cart-trigger`}
+      aria-label="Kurv"
+    >
+      <svg
+        class="w-5 h-5 md:w-6 md:h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        stroke-width="1"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+        ></path>
+      </svg>
+      <span
+        class={`absolute -top-1 -right-1 w-2 h-2 bg-cyan-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
+      ></span>
+    </button>
+  </div>
+</nav>
+
+<script>
+  // Simple smooth scroll to shop section
+  document.addEventListener("DOMContentLoaded", () => {
+    const shopLink = document.querySelector("a.shop-link");
+
+    if (shopLink) {
+      shopLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        const shopSection = document.getElementById("shop");
+        if (shopSection) {
+          shopSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      });
+    }
+  });
+</script>

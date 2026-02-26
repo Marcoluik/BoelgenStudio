@@ -1,0 +1,78 @@
+---
+const images = [
+    "/collectionimg/_DSC8255.jpg",
+    "/collectionimg/_DSC8260.jpg",
+    "/collectionimg/_DSC8261.jpg",
+    "/collectionimg/_DSC8264.jpg",
+];
+---
+
+<section class="py-32 md:py-64 bg-transparent relative z-20 overflow-hidden">
+    <div class="container mx-auto px-6">
+        <div
+            class="flex flex-col md:flex-row justify-between items-end gap-12 mb-24"
+        >
+            <div class="space-y-6">
+                <div class="flex items-center gap-4">
+                    <span class="w-8 h-[1px] bg-cyan-800"></span>
+                    <span
+                        class="text-cyan-500/60 text-[10px] tracking-[0.6em] font-medium uppercase"
+                        >Visuals</span
+                    >
+                </div>
+                <h2
+                    class="text-white text-4xl md:text-6xl font-extralight tracking-[0.2em] uppercase leading-tight italic"
+                >
+                    Studio <br /> Perspective
+                </h2>
+            </div>
+
+            <a
+                href="https://instagram.com/boelgen.studio"
+                target="_blank"
+                class="group flex items-center gap-4 text-white/30 hover:text-white transition-colors duration-500 text-[10px] tracking-[0.4em] uppercase"
+            >
+                Explore Instagram
+                <div
+                    class="w-12 h-[1px] bg-white/10 group-hover:bg-cyan-400 group-hover:w-20 transition-all duration-700"
+                >
+                </div>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+            {
+                images.map((img, i) => (
+                    <div
+                        class={`feed-item aspect-square overflow-hidden bg-[#051117] rounded-sm group relative ${i % 2 === 1 ? "mt-8 md:mt-16" : ""}`}
+                    >
+                        <img
+                            src={img}
+                            alt="Studio Perspective"
+                            class="w-full h-full object-cover opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all duration-[2s] ease-out grayscale hover:grayscale-0"
+                        />
+                        <div class="absolute inset-0 bg-cyan-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+</section>
+
+<script>
+    import gsap from "gsap";
+    import { ScrollTrigger } from "gsap/ScrollTrigger";
+    gsap.registerPlugin(ScrollTrigger);
+
+    gsap.from(".feed-item", {
+        scrollTrigger: {
+            trigger: ".feed-item",
+            start: "top 90%",
+        },
+        y: 60,
+        opacity: 0,
+        duration: 2,
+        stagger: 0.2,
+        ease: "expo.out",
+    });
+</script>
