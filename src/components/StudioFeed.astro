@@ -7,21 +7,21 @@ const images = [
 ];
 ---
 
-<section class="py-32 md:py-64 bg-transparent relative z-20 overflow-hidden">
-    <div class="container mx-auto px-6">
+<section class="py-20 sm:py-32 md:py-64 bg-transparent relative z-20 overflow-hidden">
+    <div class="container mx-auto px-4 sm:px-6">
         <div
-            class="flex flex-col md:flex-row justify-between items-end gap-12 mb-24"
+            class="flex flex-col md:flex-row justify-between items-end gap-8 sm:gap-12 mb-16 sm:mb-24"
         >
             <div class="space-y-6">
                 <div class="flex items-center gap-4">
-                    <span class="w-8 h-[1px] bg-cyan-800"></span>
+                    <span class="w-6 h-[2px] rounded-full bg-cyan-700/40"></span>
                     <span
-                        class="text-cyan-500/60 text-[10px] tracking-[0.6em] font-medium uppercase"
+                        class="text-cyan-500/50 text-xs tracking-[0.08em] font-light"
                         >Visuals</span
                     >
                 </div>
                 <h2
-                    class="text-white text-4xl md:text-6xl font-extralight tracking-[0.2em] uppercase leading-tight italic"
+                    class="text-white text-3xl sm:text-4xl md:text-6xl font-light tracking-[0.04em] leading-tight italic"
                 >
                     Studio <br /> Perspective
                 </h2>
@@ -30,21 +30,21 @@ const images = [
             <a
                 href="https://instagram.com/boelgen.studio"
                 target="_blank"
-                class="group flex items-center gap-4 text-white/30 hover:text-white transition-colors duration-500 text-[10px] tracking-[0.4em] uppercase"
+                class="group flex items-center gap-4 text-white/30 hover:text-white transition-colors duration-500 text-sm tracking-[0.04em] font-light"
             >
                 Explore Instagram
                 <div
-                    class="w-12 h-[1px] bg-white/10 group-hover:bg-cyan-400 group-hover:w-20 transition-all duration-700"
+                    class="w-10 h-[2px] rounded-full bg-white/10 group-hover:bg-cyan-400 group-hover:w-16 transition-all duration-700"
                 >
                 </div>
             </a>
         </div>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-8">
             {
                 images.map((img, i) => (
                     <div
-                        class={`feed-item aspect-square overflow-hidden bg-[#051117] rounded-sm group relative ${i % 2 === 1 ? "mt-8 md:mt-16" : ""}`}
+                        class={`feed-item aspect-square overflow-hidden bg-[#051117] rounded-2xl group relative ${i % 2 === 1 ? "mt-8 md:mt-16" : ""}`}
                     >
                         <img
                             src={img}

@@ -6,52 +6,59 @@
     id="cart-drawer"
     class="fixed inset-0 z-[100] pointer-events-none invisible overflow-hidden"
 >
-    {/* Backdrop */}
+    {/* Backdrop - soft, matches nav/hero gradient feel */}
     <div
         id="cart-backdrop"
-        class="absolute inset-0 bg-black/60 backdrop-blur-sm opacity-0 transition-opacity duration-700"
+        class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent backdrop-blur-md opacity-0 transition-opacity duration-700"
     >
     </div>
 
-    {/* Drawer Panel */}
+    {/* Drawer Panel - glassy, translucent like rest of site */}
     <div
         id="cart-panel"
-        class="absolute top-0 right-0 w-full max-w-md h-full bg-[#000d12] translate-x-full transition-transform duration-700 ease-expo shadow-2xl border-l border-white/5 pointer-events-auto"
+        class="absolute top-0 right-0 w-full max-w-md h-full translate-x-full transition-transform duration-700 ease-expo pointer-events-auto cart-panel-glass rounded-none sm:rounded-l-2xl overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
     >
-        {/* Atmospheric Glow */}
+        {/* Gradient base - fades into backdrop */}
+        <div class="absolute inset-0 bg-gradient-to-l from-[#000d12]/95 via-[#000d12]/90 to-[#000d12]/70 backdrop-blur-xl">
+        </div>
+        {/* Atmospheric Glow - matches Collection section */}
         <div
             class="absolute top-0 right-0 w-full h-full pointer-events-none overflow-hidden"
         >
             <div
-                class="absolute top-[-10%] right-[-10%] w-[80%] h-[40%] bg-cyan-400/10 blur-[100px] rounded-full"
+                class="absolute top-[-10%] right-[-10%] w-[80%] h-[50%] bg-cyan-400/12 blur-[120px] rounded-full"
             >
             </div>
             <div
-                class="absolute bottom-[10%] left-[-10%] w-[60%] h-[50%] bg-blue-300/5 blur-[80px] rounded-full opacity-50"
+                class="absolute bottom-[10%] left-[-20%] w-[70%] h-[50%] bg-blue-300/6 blur-[100px] rounded-full"
+            >
+            </div>
+            <div
+                class="absolute top-[40%] left-[-10%] w-[40%] h-[40%] bg-cyan-600/5 blur-[80px] rounded-full"
             >
             </div>
         </div>
 
-        <div class="relative z-10 h-full flex flex-col p-8 md:p-12">
+        <div class="relative z-10 h-full flex flex-col p-5 sm:p-8 md:p-12 overflow-y-auto">
             {/* Header */}
             <div class="flex justify-between items-center mb-16">
                 <div class="space-y-2">
                     <div class="flex items-center gap-3">
-                        <span class="w-6 h-[1px] bg-cyan-700"></span>
+                        <span class="w-6 h-[2px] rounded-full bg-cyan-600/40"></span>
                         <span
-                            class="text-cyan-500/60 text-[9px] tracking-[0.6em] font-medium uppercase"
+                            class="text-cyan-500/50 text-xs tracking-[0.08em] font-light"
                             >Selection</span
                         >
                     </div>
                     <h2
-                        class="text-white text-3xl font-light tracking-[0.2em] uppercase"
+                        class="text-white text-3xl font-light tracking-[0.04em]"
                     >
-                        Archive Bag
+                        Bag
                     </h2>
                 </div>
-                <button id="close-cart" class="group p-2">
+                <button id="close-cart" class="group p-3 -m-2 touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center">
                     <span
-                        class="text-white/40 group-hover:text-white transition-colors duration-500 text-[10px] tracking-widest uppercase font-light"
+                        class="text-white/40 group-hover:text-white transition-colors duration-500 text-sm tracking-wide font-light"
                         >Close</span
                     >
                 </button>
@@ -61,10 +68,10 @@
             <div
                 class="flex-grow flex flex-col items-center justify-center text-center space-y-8"
             >
-                <div class="w-20 h-[1px] bg-white/10"></div>
+                <div class="w-16 h-[2px] rounded-full bg-white/[0.06]"></div>
                 <div class="space-y-4">
                     <p
-                        class="text-white/20 text-[10px] tracking-[0.8em] uppercase font-light"
+                        class="text-white/20 text-sm tracking-[0.04em] font-light"
                     >
                         Bag is currently empty
                     </p>
@@ -72,21 +79,21 @@
                         <a
                             href="/#shop"
                             id="continue-shopping"
-                            class="text-cyan-500/40 hover:text-cyan-400 transition-colors text-[9px] tracking-[0.4em] uppercase border-b border-cyan-500/10 pb-1"
-                            >Begin Exploring</a
+                            class="text-cyan-500/40 hover:text-cyan-400 transition-all duration-500 text-sm tracking-[0.04em] font-light border-b border-cyan-500/10 pb-1 hover:border-cyan-400/30"
+                            >Begin exploring</a
                         >
                     </div>
                 </div>
-                <div class="w-20 h-[1px] bg-white/10"></div>
+                <div class="w-16 h-[2px] rounded-full bg-white/[0.06]"></div>
             </div>
 
             {/* Footer / Checkout */}
             <div
-                class="mt-auto space-y-8 pt-12 border-t border-white/5 opacity-40"
+                class="mt-auto space-y-8 pt-12 border-t border-white/[0.06] opacity-40"
             >
                 <div class="flex justify-between items-end">
                     <span
-                        class="text-white/40 text-[10px] tracking-widest uppercase font-light"
+                        class="text-white/40 text-sm tracking-wide font-light"
                         >Subtotal</span
                     >
                     <span class="text-white text-xl font-light tracking-widest"
@@ -96,14 +103,14 @@
 
                 <div class="space-y-4">
                     <button
-                        class="w-full py-6 border border-white/10 text-white/40 text-[10px] tracking-[0.6em] uppercase relative group overflow-hidden cursor-not-allowed"
+                        class="w-full py-6 border border-white/10 rounded-2xl text-white/40 text-sm tracking-[0.04em] relative group overflow-hidden cursor-not-allowed"
                     >
                         <span class="relative z-10 font-light italic"
-                            >Selection Required</span
+                            >Selection required</span
                         >
                     </button>
                     <p
-                        class="text-[9px] text-white/20 tracking-[0.2em] uppercase text-center"
+                        class="text-xs text-white/20 tracking-[0.04em] font-light text-center"
                     >
                         Shipping and taxes calculated at checkout
                     </p>
@@ -128,16 +135,16 @@
         drawer.classList.remove("invisible");
         drawer.classList.add("pointer-events-auto");
 
-        gsap.to(backdrop, { opacity: 1, duration: 0.8, ease: "power2.out" });
-        gsap.to(panel, { x: 0, duration: 1.2, ease: "expo.out" });
+        gsap.to(backdrop, { opacity: 1, duration: 1, ease: "power2.out" });
+        gsap.to(panel, { x: 0, duration: 1.4, ease: "expo.out", overwrite: true });
     };
 
     const closeCart = () => {
         if (!drawer || !panel || !backdrop) return;
-        gsap.to(panel, { x: "100%", duration: 0.8, ease: "power2.inOut" });
+        gsap.to(panel, { x: "100%", duration: 1, ease: "power2.inOut", overwrite: true });
         gsap.to(backdrop, {
             opacity: 0,
-            duration: 0.6,
+            duration: 0.8,
             onComplete: () => {
                 drawer.classList.add("invisible");
                 drawer.classList.remove("pointer-events-auto");
@@ -157,5 +164,9 @@
 <style>
     .ease-expo {
         transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    /* Soft left-edge fade instead of hard border - matches site's gradient language */
+    .cart-panel-glass {
+        box-shadow: -20px 0 60px -20px rgba(0, 0, 0, 0.4);
     }
 </style>

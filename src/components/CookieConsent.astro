@@ -1,0 +1,84 @@
+---
+// Cookie consent banner - stores preference in localStorage
+// Only shows analytics/optional cookies after user accepts
+---
+
+<div
+  id="cookie-consent"
+  class="fixed bottom-0 left-0 right-0 z-[90] p-4 sm:p-6 pb-[max(1rem,env(safe-area-inset-bottom))] pointer-events-none invisible"
+>
+  <div
+    class="max-w-2xl mx-auto bg-[#001c25] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl pointer-events-auto opacity-0 translate-y-4 transition-all duration-700 cookie-panel"
+  >
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+      <div>
+        <p class="text-white/80 text-sm font-light tracking-wide leading-relaxed">
+          We use cookies to improve your experience and analyse site traffic. By continuing, you accept our use of cookies.
+          <a href="/privacy" class="text-cyan-400/80 hover:text-cyan-400 transition-colors">Privacy policy</a>
+        </p>
+      </div>
+      <div class="flex gap-3 sm:shrink-0">
+        <button
+          id="cookie-accept"
+          class="px-6 py-3 border border-cyan-500/40 rounded-xl text-cyan-400 text-sm font-light tracking-[0.04em] hover:bg-cyan-400/10 transition-colors duration-500"
+        >
+          Accept
+        </button>
+        <button
+          id="cookie-decline"
+          class="px-6 py-3 border border-white/10 rounded-xl text-white/50 text-sm font-light tracking-[0.04em] hover:text-white/80 hover:border-white/20 transition-colors duration-500"
+        >
+          Decline
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const banner = document.getElementById("cookie-consent");
+  const panel = banner?.querySelector(".cookie-panel");
+  const acceptBtn = document.getElementById("cookie-accept");
+  const declineBtn = document.getElementById("cookie-decline");
+
+  const COOKIE_CONSENT_KEY = "bolgen-cookie-consent";
+
+  function hideBanner() {
+    if (!banner || !panel) return;
+    panel.classList.add("opacity-0", "translate-y-4");
+    setTimeout(() => banner.classList.add("invisible"), 300);
+  }
+
+  function accept() {
+    localStorage.setItem(COOKIE_CONSENT_KEY, "accepted");
+    hideBanner();
+    // Here you would enable analytics (e.g. gtag, Plausible)
+    // if (window.plausible) window.plausible('Cookie consent', { props: { consent: 'accepted' } });
+  }
+
+  function decline() {
+    localStorage.setItem(COOKIE_CONSENT_KEY, "declined");
+    hideBanner();
+  }
+
+  function init() {
+    if (localStorage.getItem(COOKIE_CONSENT_KEY)) {
+      return;
+    }
+    if (!banner || !panel) return;
+    banner.classList.remove("invisible");
+    requestAnimationFrame(() => {
+      panel?.classList.remove("opacity-0", "translate-y-4");
+    });
+  }
+
+  acceptBtn?.addEventListener("click", accept);
+  declineBtn?.addEventListener("click", decline);
+
+  // Show after a short delay so it doesn't block initial load
+  if (document.readyState === "complete") {
+    setTimeout(init, 1500);
+  } else {
+    window.addEventListener("load", () => setTimeout(init, 1500));
+  }
+</script>

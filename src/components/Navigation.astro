@@ -16,32 +16,32 @@ const underlineColor = isDark ? "bg-white/60" : "bg-stone-800";
 ---
 
 <nav
-  class={`fixed top-0 left-0 right-0 z-50 px-6 md:px-12 py-5 md:py-6 flex items-center justify-between transition-all duration-700 ${isDark ? "bg-gradient-to-b from-black/40 via-black/15 to-transparent" : "bg-gradient-to-b from-white/40 via-white/15 to-transparent"}`}
+  class={`fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 md:px-12 py-4 md:py-6 pt-[max(1rem,env(safe-area-inset-top))] flex items-center justify-between transition-all duration-700 ${isDark ? "bg-gradient-to-b from-black/40 via-black/15 to-transparent" : "bg-gradient-to-b from-white/40 via-white/15 to-transparent"}`}
 >
   <!-- Left Navigation -->
-  <div class="flex items-center gap-8 md:gap-12 lg:gap-16">
+  <div class="flex items-center gap-4 sm:gap-6 md:gap-12 lg:gap-16 min-h-11">
     <a
       href="/#shop"
-      class={`${textColor} ${hoverColor} transition-all duration-300 font-light text-xs md:text-sm tracking-[0.1em] uppercase relative group shop-link`}
+      class={`${textColor} ${hoverColor} transition-all duration-300 font-light text-sm md:text-base tracking-[0.03em] relative group shop-link`}
     >
       Kollektion
       <span
-        class={`absolute -bottom-1 left-0 h-[1px] ${underlineColor} transition-all duration-500 w-0 group-hover:w-full`}
+        class={`absolute -bottom-1 left-0 h-[2px] rounded-full ${underlineColor} transition-all duration-500 w-0 group-hover:w-full`}
       ></span>
     </a>
     <a
       href="/"
-      class={`${textColor} ${hoverColor} transition-all duration-300 font-light text-xs md:text-sm tracking-[0.1em] uppercase relative group`}
+      class={`${textColor} ${hoverColor} transition-all duration-300 font-light text-sm md:text-base tracking-[0.03em] relative group`}
     >
       Hjem
       <span
-        class={`absolute -bottom-1 left-0 h-[1px] ${underlineColor} transition-all duration-500 ${pathname === "/" ? "w-full" : "w-0 group-hover:w-full"}`}
+        class={`absolute -bottom-1 left-0 h-[2px] rounded-full ${underlineColor} transition-all duration-500 ${pathname === "/" ? "w-full" : "w-0 group-hover:w-full"}`}
       ></span>
     </a>
   </div>
 
   <!-- Center Logo -->
-  <div class="absolute left-1/2 -translate-x-1/2 hidden md:block">
+  <div class="absolute left-1/2 -translate-x-1/2">
     <a
       href="/"
       class="block transition-all duration-500 hover:opacity-80 group"
@@ -49,18 +49,18 @@ const underlineColor = isDark ? "bg-white/60" : "bg-stone-800";
       <img
         src="/logo-bolgen.svg"
         alt="Bølgen Studio"
-        class={`h-8 md:h-10 lg:h-12 w-auto ${logoBrightness} opacity-90 group-hover:opacity-100 transition-opacity duration-300`}
+        class={`h-7 sm:h-8 md:h-10 lg:h-12 w-auto ${logoBrightness} opacity-90 group-hover:opacity-100 transition-opacity duration-300`}
       />
     </a>
   </div>
 
   <!-- Right Navigation -->
-  <div class="flex items-center gap-6 md:gap-8">
+  <div class="flex items-center gap-4 sm:gap-6 md:gap-8 min-h-11">
     <a
       href="https://instagram.com/boelgen.studio"
       target="_blank"
       rel="noopener noreferrer"
-      class={`${textColor} ${hoverColor} transition-all duration-300 group`}
+      class={`${textColor} ${hoverColor} transition-all duration-300 group p-2 -m-2 touch-manipulation`}
       aria-label="Instagram"
     >
       <img
@@ -70,7 +70,7 @@ const underlineColor = isDark ? "bg-white/60" : "bg-stone-800";
       />
     </a>
     <button
-      class={`${textColor} hover:text-cyan-400 transition-all duration-500 relative group cart-trigger`}
+      class={`${textColor} hover:text-cyan-400 transition-all duration-500 relative group cart-trigger p-2 -m-2 touch-manipulation`}
       aria-label="Kurv"
     >
       <svg
@@ -93,19 +93,3 @@ const underlineColor = isDark ? "bg-white/60" : "bg-stone-800";
   </div>
 </nav>
 
-<script>
-  // Simple smooth scroll to shop section
-  document.addEventListener("DOMContentLoaded", () => {
-    const shopLink = document.querySelector("a.shop-link");
-
-    if (shopLink) {
-      shopLink.addEventListener("click", (e) => {
-        e.preventDefault();
-        const shopSection = document.getElementById("shop");
-        if (shopSection) {
-          shopSection.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      });
-    }
-  });
-</script>

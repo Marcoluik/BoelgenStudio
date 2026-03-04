@@ -1,0 +1,64 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navigation from "../components/Navigation.astro";
+---
+
+<Layout title="Terms of Sale | Bølgen Studio" description="Bølgen Studio terms of sale and conditions for purchases.">
+  <Navigation />
+
+  <main class="relative z-10 min-h-screen pt-24 sm:pt-32 pb-24 sm:pb-40">
+    <div class="fixed inset-0 pointer-events-none z-0 bg-[#000d12]">
+      <div class="absolute top-[-10%] left-[20%] w-[60%] h-[60%] bg-cyan-400/5 blur-[150px] rounded-full"></div>
+      <div class="absolute bottom-[20%] right-[10%] w-[50%] h-[50%] bg-blue-300/5 blur-[120px] rounded-full"></div>
+    </div>
+
+    <div class="container mx-auto px-4 sm:px-6 relative z-10 max-w-3xl">
+      <a href="/" class="group inline-flex items-center gap-4 py-2 -my-2 text-cyan-100/30 hover:text-cyan-100 transition-colors duration-500 text-sm tracking-[0.04em] font-light mb-12">
+        <svg width="24" height="1" viewBox="0 0 24 1" fill="none" class="w-6 rotate-180 opacity-40 group-hover:opacity-100 transition-all duration-500">
+          <line y1="0.5" x2="24" y2="0.5" stroke="currentColor" />
+        </svg>
+        Back to Home
+      </a>
+
+      <div class="space-y-12">
+        <div>
+          <span class="w-6 h-[2px] rounded-full bg-cyan-700/50 block mb-6"></span>
+          <h1 class="text-white text-3xl sm:text-4xl lg:text-5xl font-light tracking-[0.02em] mb-4">Terms of Sale</h1>
+          <p class="text-white/40 text-sm tracking-[0.04em] font-light">Last updated: February 2026</p>
+        </div>
+
+        <div class="space-y-8 text-white/70 text-sm leading-relaxed font-light tracking-wide">
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">1. Agreement</h2>
+            <p>By placing an order on Bølgen Studio, you agree to these terms.</p>
+          </section>
+
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">2. Products</h2>
+            <p>We strive to display products accurately. Colours may vary slightly due to screen settings. We reserve the right to correct errors and to limit quantities.</p>
+          </section>
+
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">3. Prices and payment</h2>
+            <p>All prices are in DKK and include VAT unless otherwise stated. Payment is due at checkout. We accept the payment methods shown at checkout.</p>
+          </section>
+
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">4. Shipping and delivery</h2>
+            <p>Delivery times and costs are shown at checkout. Risk of loss passes to you upon delivery. We are not responsible for delays caused by customs or carriers.</p>
+          </section>
+
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">5. Returns</h2>
+            <p>Please see our <a href="/shipping" class="text-cyan-400/80 hover:text-cyan-400 font-light transition-colors">Shipping & Returns</a> page for return conditions and refund policy.</p>
+          </section>
+
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">6. Contact</h2>
+            <p>For questions about your order: <a href="/contact" class="text-cyan-400/80 hover:text-cyan-400 font-light transition-colors">Contact us</a></p>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>

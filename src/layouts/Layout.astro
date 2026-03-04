@@ -1,6 +1,7 @@
 ---
 import { ClientRouter } from "astro:transitions";
 import Cart from "../components/Cart.astro";
+import CookieConsent from "../components/CookieConsent.astro";
 import Footer from "../components/Footer.astro";
 
 interface Props {
@@ -22,7 +23,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content={description} />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
 
@@ -48,11 +49,11 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <!-- Canonical URL -->
     <link rel="canonical" href={canonicalURL} />
 
-    <!-- Fonts -->
+    <!-- Fonts - Plus Jakarta Sans: soft, rounded curves that match the wave logo -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
       rel="stylesheet"
     />
 
@@ -65,8 +66,35 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   </head>
   <body class="antialiased">
     <Cart />
+    <CookieConsent />
     <slot />
     <Footer />
+    <script>
+      import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+      // Shop scroll - works with ClientRouter (DOMContentLoaded doesn't fire on client nav)
+      function scrollToShop() {
+        const shop = document.getElementById("shop");
+        if (shop) shop.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      document.addEventListener("click", (e) => {
+        const link = e.target.closest('a[href="#shop"], a[href="/#shop"]');
+        if (link) {
+          if (window.location.pathname === "/" || window.location.pathname === "") {
+            e.preventDefault();
+            scrollToShop();
+          }
+        }
+      });
+
+      document.addEventListener("astro:after-swap", () => {
+        if (window.location.hash === "#shop") scrollToShop();
+        ScrollTrigger.refresh();
+      });
+
+      if (window.location.hash === "#shop") scrollToShop();
+    </script>
   </body>
 </html>
 
@@ -86,7 +114,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
   body {
     font-family:
-      "Inter",
+      "Plus Jakarta Sans",
       -apple-system,
       BlinkMacSystemFont,
       "Segoe UI",
@@ -98,7 +126,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     overflow-y: auto;
     background-color: #000000;
     font-weight: 300;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.02em;
     min-height: 100%;
     height: auto;
   }
@@ -125,9 +153,10 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     color: white;
   }
 
-  /* Focus styles for accessibility */
+  /* Focus styles for accessibility - soft, rounded */
   *:focus-visible {
-    outline: 2px solid rgba(56, 189, 248, 0.6);
+    outline: 2px solid rgba(56, 189, 248, 0.5);
     outline-offset: 2px;
+    border-radius: 4px;
   }
 </style>

@@ -1,0 +1,71 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navigation from "../components/Navigation.astro";
+---
+
+<Layout title="Privacy Policy | Bølgen Studio" description="Bølgen Studio privacy policy. How we collect, use, and protect your personal data.">
+  <Navigation />
+
+  <main class="relative z-10 min-h-screen pt-24 sm:pt-32 pb-24 sm:pb-40">
+    <div class="fixed inset-0 pointer-events-none z-0 bg-[#000d12]">
+      <div class="absolute top-[-10%] left-[20%] w-[60%] h-[60%] bg-cyan-400/5 blur-[150px] rounded-full"></div>
+      <div class="absolute bottom-[20%] right-[10%] w-[50%] h-[50%] bg-blue-300/5 blur-[120px] rounded-full"></div>
+    </div>
+
+    <div class="container mx-auto px-4 sm:px-6 relative z-10 max-w-3xl">
+      <a href="/" class="group inline-flex items-center gap-4 py-2 -my-2 text-cyan-100/30 hover:text-cyan-100 transition-colors duration-500 text-sm tracking-[0.04em] font-light mb-12">
+        <svg width="24" height="1" viewBox="0 0 24 1" fill="none" class="w-6 rotate-180 opacity-40 group-hover:opacity-100 transition-all duration-500">
+          <line y1="0.5" x2="24" y2="0.5" stroke="currentColor" />
+        </svg>
+        Back to Home
+      </a>
+
+      <div class="space-y-12">
+        <div>
+          <span class="w-6 h-[2px] rounded-full bg-cyan-700/50 block mb-6"></span>
+          <h1 class="text-white text-3xl sm:text-4xl lg:text-5xl font-light tracking-[0.02em] mb-4">Privacy Policy</h1>
+          <p class="text-white/40 text-sm tracking-[0.04em] font-light">Last updated: February 2026</p>
+        </div>
+
+        <div class="space-y-8 text-white/70 text-sm leading-relaxed font-light tracking-wide">
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">1. Data controller</h2>
+            <p>Bølgen Studio, Copenhagen, Denmark, is the data controller for the personal data we process on this website.</p>
+          </section>
+
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">2. What data we collect</h2>
+            <p>We may collect: name, email address, shipping address, payment information (processed by our payment provider), and order history. When you visit our site, we may collect technical data such as IP address, browser type, and pages visited.</p>
+          </section>
+
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">3. How we use your data</h2>
+            <p>We use your data to:</p>
+            <ul class="list-disc list-inside mt-2 space-y-2 text-white/60">
+              <li>Process and fulfil orders</li>
+              <li>Send order confirmations and shipping updates</li>
+              <li>Respond to enquiries and support requests</li>
+              <li>Send newsletters (if you have opted in)</li>
+              <li>Improve our website and services</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">4. Legal basis</h2>
+            <p>We process your data based on: contract performance (orders), consent (newsletter), and legitimate interests (website improvement, fraud prevention).</p>
+          </section>
+
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">5. Your rights</h2>
+            <p>Under GDPR you have the right to access, rectify, erase, restrict processing, data portability, and to object. You may also withdraw consent at any time. Contact us at the address below to exercise these rights or lodge a complaint with your supervisory authority.</p>
+          </section>
+
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">6. Contact</h2>
+            <p>For privacy-related questions: <a href="/contact" class="text-cyan-400/80 hover:text-cyan-400 font-light transition-colors">Contact us</a></p>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>

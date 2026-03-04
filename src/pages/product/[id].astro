@@ -29,13 +29,13 @@ const otherProducts = products.filter((p) => p.id !== product.id);
         </div>
     </div>
 
-    <main class="relative z-10 min-h-screen pt-32 pb-40">
-        <div class="container mx-auto px-6">
+    <main class="relative z-10 min-h-screen pt-24 sm:pt-32 pb-24 sm:pb-40">
+        <div class="container mx-auto px-4 sm:px-6">
             {/* Back to Archive Link */}
             <div class="mb-12">
                 <a
                     href="/#shop"
-                    class="group inline-flex items-center gap-4 text-cyan-100/30 hover:text-cyan-100 transition-colors duration-500 text-[10px] tracking-[0.4em] uppercase"
+                    class="group inline-flex items-center gap-4 py-2 -my-2 text-cyan-100/30 hover:text-cyan-100 transition-colors duration-500 text-sm tracking-[0.04em] font-light touch-manipulation"
                 >
                     <svg
                         width="24"
@@ -48,17 +48,17 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                         <line y1="0.5" x2="24" y2="0.5" stroke="currentColor"
                         ></line>
                     </svg>
-                    Back to Archive
+                    Back to Collection
                 </a>
             </div>
 
             <div
-                class="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-32 items-start"
+                class="grid grid-cols-1 lg:grid-cols-2 gap-10 sm:gap-16 lg:gap-32 items-start"
             >
                 {/* Gallery Section */}
                 <div class="space-y-8">
                     <div
-                        class="aspect-[3/4] overflow-hidden bg-[#051117] group rounded-sm border border-white/5"
+                        class="aspect-[3/4] overflow-hidden bg-[#051117] group rounded-2xl border border-white/5"
                     >
                         <img
                             src={product.mainImage}
@@ -68,9 +68,9 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                         />
                     </div>
 
-                    <div class="grid grid-cols-3 gap-4 md:gap-8">
+                    <div class="grid grid-cols-3 gap-3 sm:gap-4 md:gap-8">
                         <div
-                            class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-sm"
+                            class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-2xl"
                         >
                             <img
                                 src={product.mainImage}
@@ -80,7 +80,7 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                         </div>
                         {
                             product.gallery.map((img) => (
-                                <div class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-sm">
+                                <div class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-2xl">
                                     <img
                                         src={img}
                                         alt={`${product.name} detail`}
@@ -90,7 +90,7 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                             ))
                         }
                         <div
-                            class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-sm"
+                            class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-2xl"
                         >
                             <img
                                 src={product.backImage}
@@ -105,19 +105,19 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                 <div class="lg:sticky lg:top-40 space-y-12 product-info">
                     <div>
                         <div class="flex items-center gap-4 mb-6">
-                            <span class="w-8 h-[1px] bg-cyan-800"></span>
+                            <span class="w-6 h-[2px] rounded-full bg-cyan-700/50"></span>
                             <span
-                                class="text-cyan-500/60 text-[10px] tracking-[0.6em] font-medium uppercase"
-                                >Selection Detail</span
+                                class="text-cyan-500/50 text-xs tracking-[0.08em] font-light"
+                                >Selection detail</span
                             >
                         </div>
                         <h1
-                            class="text-white text-4xl lg:text-6xl font-extralight tracking-[0.2em] uppercase mb-4 leading-tight"
+                            class="text-white text-3xl sm:text-4xl lg:text-6xl font-light tracking-[0.02em] mb-4 leading-tight"
                         >
                             {product.name}
                         </h1>
                         <p
-                            class="text-white/40 text-xs tracking-[0.5em] uppercase mb-8"
+                            class="text-white/40 text-base tracking-[0.04em] mb-8 font-light"
                         >
                             {product.subName}
                         </p>
@@ -130,7 +130,7 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                                 class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"
                             ></span>
                             <span
-                                class="text-red-400 text-[9px] tracking-[0.3em] uppercase font-medium"
+                                class="text-red-400 text-xs tracking-[0.04em] font-light"
                                 >Limited availability — 7 pieces left</span
                             >
                         </div>
@@ -143,7 +143,7 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                             {product.description}
                         </p>
                         <p
-                            class="text-white text-3xl font-light tracking-widest mt-8"
+                            class="text-white text-3xl font-light tracking-wide mt-8"
                         >
                             {product.price}
                         </p>
@@ -155,12 +155,12 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                                 class="flex justify-between items-end max-w-xs"
                             >
                                 <span
-                                    class="text-white/50 text-[10px] tracking-[0.3em] uppercase block"
+                                    class="text-white/50 text-[10px] tracking-[0.08em] block font-light"
                                 >
                                     Select Size
                                 </span>
                                 <button
-                                    class="size-guide-trigger text-cyan-400/60 hover:text-cyan-400 text-[9px] tracking-[0.2em] uppercase transition-colors border-b border-cyan-500/20"
+                                    class="size-guide-trigger text-cyan-400/60 hover:text-cyan-400 text-sm tracking-[0.04em] font-light transition-colors border-b border-cyan-500/20"
                                     >Size Guide</button
                                 >
                             </div>
@@ -168,29 +168,29 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                             {/* Size Guide Modal */}
                             <div
                                 id="size-guide-modal"
-                                class="fixed inset-0 z-[110] flex items-center justify-center p-6 invisible"
+                                class="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 invisible"
                             >
                                 <div
                                     class="absolute inset-0 bg-black/80 backdrop-blur-md opacity-0 transition-opacity duration-500 modal-backdrop"
                                 >
                                 </div>
                                 <div
-                                    class="relative bg-[#001c25] border border-white/5 p-8 md:p-12 max-w-2xl w-full translate-y-10 opacity-0 transition-all duration-700 modal-content"
+                                    class="relative bg-[#001c25] border border-white/5 rounded-2xl p-6 sm:p-8 md:p-12 max-w-2xl w-full max-h-[90vh] overflow-y-auto translate-y-10 opacity-0 transition-all duration-700 modal-content"
                                 >
                                     <button
-                                        class="absolute top-6 right-6 text-white/20 hover:text-white transition-colors close-modal uppercase text-[10px] tracking-widest"
+                                        class="absolute top-6 right-6 text-white/20 hover:text-white transition-colors close-modal text-sm tracking-wide font-light"
                                         >Close</button
                                     >
 
                                     <div class="space-y-12">
                                         <div class="space-y-4">
                                             <h3
-                                                class="text-white text-3xl font-light tracking-widest uppercase italic"
+                                                class="text-white text-3xl font-light tracking-wide italic"
                                             >
                                                 Size Guide
                                             </h3>
                                             <div
-                                                class="w-12 h-[1px] bg-cyan-500/30"
+                                                class="w-10 h-[2px] rounded-full bg-cyan-500/20"
                                             >
                                             </div>
                                         </div>
@@ -204,25 +204,25 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                                                         class="border-b border-white/10"
                                                     >
                                                         <th
-                                                            class="py-4 text-white/40 text-[10px] tracking-[0.2em] uppercase font-light"
+                                                            class="py-4 text-white/40 text-[10px] tracking-[0.06em]  font-light"
                                                             >Size</th
                                                         >
                                                         <th
-                                                            class="py-4 text-white/40 text-[10px] tracking-[0.2em] uppercase font-light"
+                                                            class="py-4 text-white/40 text-[10px] tracking-[0.06em]  font-light"
                                                             >Chest (cm)</th
                                                         >
                                                         <th
-                                                            class="py-4 text-white/40 text-[10px] tracking-[0.2em] uppercase font-light"
+                                                            class="py-4 text-white/40 text-[10px] tracking-[0.06em]  font-light"
                                                             >Length (cm)</th
                                                         >
                                                         <th
-                                                            class="py-4 text-white/40 text-[10px] tracking-[0.2em] uppercase font-light"
+                                                            class="py-4 text-white/40 text-[10px] tracking-[0.06em]  font-light"
                                                             >Sleeve (cm)</th
                                                         >
                                                     </tr>
                                                 </thead>
                                                 <tbody
-                                                    class="text-[11px] tracking-widest uppercase"
+                                                    class="text-[11px] tracking-wide "
                                                 >
                                                     <tr
                                                         class="border-b border-white/5"
@@ -307,7 +307,7 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                                         </div>
 
                                         <p
-                                            class="text-white/30 text-[9px] tracking-widest leading-relaxed uppercase italic"
+                                            class="text-white/30 text-[9px] tracking-wide leading-relaxed  italic"
                                         >
                                             * All measurements are taken flat.
                                             Our pieces are designed for a
@@ -316,10 +316,10 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex gap-4">
+                            <div class="flex gap-3 sm:gap-4">
                                 {
                                     ["S", "M", "L", "XL"].map((size) => (
-                                        <button class="size-btn w-12 h-12 border border-white/10 text-white/40 text-[10px] tracking-widest hover:border-cyan-500/60 hover:text-white transition-all duration-500 uppercase rounded-sm bg-white/[0.02]">
+                                        <button class="size-btn w-12 h-12 min-w-[48px] min-h-[48px] border border-white/10 text-white/40 text-[10px] tracking-wide hover:border-cyan-500/60 hover:text-white transition-all duration-500 rounded-xl bg-white/[0.02] touch-manipulation">
                                             {size}
                                         </button>
                                     ))
@@ -329,7 +329,7 @@ const otherProducts = products.filter((p) => p.id !== product.id);
 
                         <div class="space-y-4">
                             <button
-                                class="add-to-cart-btn w-full py-6 border border-white/20 text-white text-[10px] tracking-[0.6em] uppercase relative group overflow-hidden transition-all duration-700 hover:border-cyan-400/40"
+                                class="add-to-cart-btn w-full py-5 sm:py-6 min-h-[48px] border border-white/20 rounded-2xl text-white text-sm tracking-[0.04em] font-light relative group overflow-hidden transition-all duration-700 hover:border-cyan-400/40 touch-manipulation"
                             >
                                 <div
                                     class="absolute inset-0 bg-white/[0.03] group-hover:bg-cyan-400/10 transition-colors duration-700"
@@ -344,7 +344,7 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                                 </div>
                             </button>
                             <p
-                                class="text-[9px] text-white/40 tracking-[0.2em] uppercase text-center italic"
+                                class="text-xs text-white/40 tracking-[0.04em] font-light text-center italic"
                             >
                                 Includes free studio-exclusive packaging
                             </p>
@@ -366,7 +366,7 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                                             d="M5 13l4 4L19 7"></path></svg
                                     >
                                     <span
-                                        class="text-[8px] tracking-[0.2em] uppercase"
+                                        class="text-[8px] tracking-[0.06em] "
                                         >Global Priority</span
                                     >
                                 </div>
@@ -384,8 +384,8 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                                         ></path></svg
                                     >
                                     <span
-                                        class="text-[8px] tracking-[0.2em] uppercase"
-                                        >Secure Archive</span
+                                        class="text-[8px] tracking-[0.06em] "
+                                        >Secure Collection</span
                                     >
                                 </div>
                             </div>
@@ -393,22 +393,24 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                     </div>
 
                     <div class="pt-12 space-y-0">
-                        <details
-                            class="group border-t border-white/10 overflow-hidden"
+                        <div
+                            class="accordion group border-t border-white/10 overflow-hidden"
                         >
-                            <summary
-                                class="flex justify-between items-center py-6 cursor-pointer list-none"
+                            <button
+                                type="button"
+                                class="accordion-trigger w-full flex justify-between items-center py-5 sm:py-6 min-h-[48px] cursor-pointer text-left bg-transparent border-none touch-manipulation"
                             >
                                 <span
-                                    class="text-white/80 text-[10px] tracking-[0.4em] uppercase font-light"
+                                    class="text-white/80 text-[10px] tracking-[0.1em]  font-light"
                                     >Specifications</span
                                 >
                                 <span
-                                    class="text-white/40 group-open:rotate-45 transition-transform duration-500"
+                                    class="accordion-icon text-white/40 transition-transform duration-500"
                                     >+</span
                                 >
-                            </summary>
-                            <div class="pb-8 space-y-4">
+                            </button>
+                            <div class="accordion-content">
+                                <div class="pb-8 space-y-4">
                                 <p
                                     class="text-white/60 text-xs leading-relaxed font-light tracking-wide"
                                 >
@@ -420,72 +422,76 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                                 <div class="grid grid-cols-2 gap-4 pt-4">
                                     <div>
                                         <span
-                                            class="block text-[9px] text-white/40 uppercase tracking-widest mb-1"
+                                            class="block text-[9px] text-white/40  tracking-wide mb-1"
                                             >Fabric</span
                                         >
                                         <span
-                                            class="text-[10px] text-white/80 uppercase tracking-widest"
+                                            class="text-[10px] text-white/80  tracking-wide"
                                             >100% Organic Cotton</span
                                         >
                                     </div>
                                     <div>
                                         <span
-                                            class="block text-[9px] text-white/40 uppercase tracking-widest mb-1"
+                                            class="block text-[9px] text-white/40  tracking-wide mb-1"
                                             >Origin</span
                                         >
                                         <span
-                                            class="text-[10px] text-white/80 uppercase tracking-widest"
+                                            class="text-[10px] text-white/80  tracking-wide"
                                             >Made in Portugal</span
                                         >
                                     </div>
                                 </div>
+                                </div>
                             </div>
-                        </details>
+                        </div>
 
-                        <details
-                            class="group border-t border-white/10 overflow-hidden"
+                        <div
+                            class="accordion group border-t border-white/10 overflow-hidden"
                         >
-                            <summary
-                                class="flex justify-between items-center py-6 cursor-pointer list-none"
+                            <button
+                                type="button"
+                                class="accordion-trigger w-full flex justify-between items-center py-5 sm:py-6 min-h-[48px] cursor-pointer text-left bg-transparent border-none touch-manipulation"
                             >
                                 <span
-                                    class="text-white/80 text-[10px] tracking-[0.4em] uppercase font-light"
+                                    class="text-white/80 text-[10px] tracking-[0.1em]  font-light"
                                     >Shipping & Returns</span
                                 >
                                 <span
-                                    class="text-white/40 group-open:rotate-45 transition-transform duration-500"
+                                    class="accordion-icon text-white/40 transition-transform duration-500"
                                     >+</span
                                 >
-                            </summary>
-                            <div class="pb-8">
+                            </button>
+                            <div class="accordion-content">
+                                <div class="pb-8">
                                 <p
                                     class="text-white/60 text-xs leading-relaxed font-light tracking-wide"
                                 >
                                     Global shipping available. Standard delivery
                                     2-4 business days within EU. 14-day return
-                                    period on all archive pieces.
+                                    period on all Collection pieces.
                                 </p>
+                                </div>
                             </div>
-                        </details>
+                        </div>
 
                         <div class="pt-8 border-t border-white/10 flex gap-8">
                             <div class="flex flex-col gap-1">
                                 <span
-                                    class="text-[9px] text-cyan-500/60 uppercase tracking-[0.3em]"
+                                    class="text-[9px] text-cyan-500/60  tracking-[0.08em]"
                                     >Status</span
                                 >
                                 <span
-                                    class="text-[10px] text-white/80 uppercase tracking-[0.2em]"
-                                    >Live Archive</span
+                                    class="text-[10px] text-white/80  tracking-[0.06em]"
+                                    >Live Collection</span
                                 >
                             </div>
                             <div class="flex flex-col gap-1">
                                 <span
-                                    class="text-[9px] text-cyan-500/60 uppercase tracking-[0.3em]"
+                                    class="text-[9px] text-cyan-500/60  tracking-[0.08em]"
                                     >Studio</span
                                 >
                                 <span
-                                    class="text-[10px] text-white/80 uppercase tracking-[0.2em]"
+                                    class="text-[10px] text-white/80  tracking-[0.06em]"
                                     >Copenhagen</span
                                 >
                             </div>
@@ -499,34 +505,34 @@ const otherProducts = products.filter((p) => p.id !== product.id);
                 otherProducts.length > 0 && (
                     <div class="mt-64">
                         <div class="flex items-center gap-6 mb-24">
-                            <div class="h-[1px] w-12 bg-cyan-500/30" />
-                            <h2 class="text-white/40 text-[10px] tracking-[0.8em] uppercase font-light">
+                            <div class="h-[2px] w-10 rounded-full bg-cyan-500/20" />
+                            <h2 class="text-white/40 text-sm tracking-[0.08em] font-light">
                                 Continue Exploring
                             </h2>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-10 sm:gap-16">
                             {otherProducts.map((p) => (
                                 <a
                                     href={`/product/${p.id}`}
                                     class="group relative block overflow-hidden"
                                 >
-                                    <div class="aspect-[16/9] overflow-hidden bg-[#051117] rounded-sm border border-white/5">
+                                    <div class="aspect-[16/9] overflow-hidden bg-[#051117] rounded-2xl border border-white/5">
                                         <img
                                             src={p.mainImage}
                                             alt={p.name}
                                             class="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-[2s] ease-out"
                                         />
-                                        <div class="absolute inset-x-8 bottom-8 flex justify-between items-end z-20">
+                                        <div class="absolute inset-x-4 sm:inset-x-8 bottom-4 sm:bottom-8 flex justify-between items-end z-20">
                                             <div>
-                                                <span class="text-[9px] text-cyan-400/60 uppercase tracking-[0.4em] block mb-2">
+                                                <span class="text-xs text-cyan-400/60 tracking-[0.06em] block mb-2 font-light">
                                                     {p.subName}
                                                 </span>
-                                                <h3 class="text-white text-2xl font-light uppercase tracking-widest">
+                                                <h3 class="text-white text-2xl font-light tracking-wide">
                                                     {p.name}
                                                 </h3>
                                             </div>
-                                            <span class="text-white/40 text-[10px] uppercase tracking-widest mb-1 underline underline-offset-8">
+                                            <span class="text-white/40 text-sm tracking-wide mb-1 underline underline-offset-8 font-light">
                                                 Explore
                                             </span>
                                         </div>
@@ -634,6 +640,16 @@ const otherProducts = products.filter((p) => p.id !== product.id);
     sizeGuideTrigger?.addEventListener("click", openModal);
     closeModal?.addEventListener("click", hideModal);
     modalBackdrop?.addEventListener("click", hideModal);
+
+    // Accordion toggle - use event delegation so it works with View Transitions
+    document.addEventListener("click", (e) => {
+        const trigger = (e.target as Element).closest(".accordion-trigger");
+        if (trigger) {
+            e.preventDefault();
+            const accordion = trigger.closest(".accordion");
+            accordion?.classList.toggle("open");
+        }
+    });
 </script>
 
 <style>
@@ -644,5 +660,20 @@ const otherProducts = products.filter((p) => p.id !== product.id);
 
     summary::-webkit-details-marker {
         display: none;
+    }
+
+    /* Smooth accordion expand/collapse */
+    .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease;
+    }
+
+    .accordion.open .accordion-content {
+        max-height: 400px;
+    }
+
+    .accordion.open .accordion-icon {
+        transform: rotate(45deg);
     }
 </style>

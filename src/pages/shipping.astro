@@ -1,0 +1,73 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navigation from "../components/Navigation.astro";
+---
+
+<Layout title="Shipping & Returns | Bølgen Studio" description="Bølgen Studio shipping policy and returns information.">
+  <Navigation />
+
+  <main class="relative z-10 min-h-screen pt-24 sm:pt-32 pb-24 sm:pb-40">
+    <div class="fixed inset-0 pointer-events-none z-0 bg-[#000d12]">
+      <div class="absolute top-[-10%] left-[20%] w-[60%] h-[60%] bg-cyan-400/5 blur-[150px] rounded-full"></div>
+      <div class="absolute bottom-[20%] right-[10%] w-[50%] h-[50%] bg-blue-300/5 blur-[120px] rounded-full"></div>
+    </div>
+
+    <div class="container mx-auto px-4 sm:px-6 relative z-10 max-w-3xl">
+      <a href="/" class="group inline-flex items-center gap-4 py-2 -my-2 text-cyan-100/30 hover:text-cyan-100 transition-colors duration-500 text-sm tracking-[0.04em] font-light mb-12">
+        <svg width="24" height="1" viewBox="0 0 24 1" fill="none" class="w-6 rotate-180 opacity-40 group-hover:opacity-100 transition-all duration-500">
+          <line y1="0.5" x2="24" y2="0.5" stroke="currentColor" />
+        </svg>
+        Back to Home
+      </a>
+
+      <div class="space-y-12">
+        <div>
+          <span class="w-6 h-[2px] rounded-full bg-cyan-700/50 block mb-6"></span>
+          <h1 class="text-white text-3xl sm:text-4xl lg:text-5xl font-light tracking-[0.02em] mb-4">Shipping & Returns</h1>
+          <p class="text-white/40 text-sm tracking-[0.04em] font-light">Last updated: February 2026</p>
+        </div>
+
+        <div class="space-y-8 text-white/70 text-sm leading-relaxed font-light tracking-wide">
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">Shipping</h2>
+            <p>We ship worldwide. Standard delivery within the EU is typically 2–4 business days. International shipping times vary. Delivery costs are calculated at checkout.</p>
+          </section>
+
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">Returns</h2>
+            <p>You have 14 days from delivery to return unworn, unwashed items in original packaging. Initiate a return by contacting us. We will process refunds within 14 days of receiving the item.</p>
+          </section>
+
+          <section id="size-guide">
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">Size guide</h2>
+            <p>All measurements are taken flat. Our pieces are designed for a relaxed, cinematic fit.</p>
+            <div class="overflow-x-auto mt-6">
+              <table class="w-full text-left border-collapse border border-white/10 rounded-lg overflow-hidden">
+                <thead>
+                  <tr class="border-b border-white/10">
+                    <th class="py-4 px-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Size</th>
+                    <th class="py-4 px-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Chest (cm)</th>
+                    <th class="py-4 px-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Length (cm)</th>
+                    <th class="py-4 px-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Sleeve (cm)</th>
+                  </tr>
+                </thead>
+                <tbody class="text-[11px] tracking-wide">
+                  <tr class="border-b border-white/5"><td class="py-6 px-4 text-white">S</td><td class="py-6 px-4 text-white/60">56</td><td class="py-6 px-4 text-white/60">68</td><td class="py-6 px-4 text-white/60">63</td></tr>
+                  <tr class="border-b border-white/5"><td class="py-6 px-4 text-white">M</td><td class="py-6 px-4 text-white/60">59</td><td class="py-6 px-4 text-white/60">71</td><td class="py-6 px-4 text-white/60">65</td></tr>
+                  <tr class="border-b border-white/5"><td class="py-6 px-4 text-white">L</td><td class="py-6 px-4 text-white/60">62</td><td class="py-6 px-4 text-white/60">74</td><td class="py-6 px-4 text-white/60">67</td></tr>
+                  <tr><td class="py-6 px-4 text-white">XL</td><td class="py-6 px-4 text-white/60">65</td><td class="py-6 px-4 text-white/60">77</td><td class="py-6 px-4 text-white/60">69</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-white/30 text-[9px] tracking-wide leading-relaxed italic mt-4">* All measurements are taken flat.</p>
+          </section>
+
+          <section>
+            <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">Contact</h2>
+            <p>Questions about shipping or returns? <a href="/contact" class="text-cyan-400/80 hover:text-cyan-400 font-light transition-colors">Get in touch</a></p>
+          </section>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>

@@ -1,0 +1,29 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navigation from "../components/Navigation.astro";
+---
+
+<Layout title="Page not found | Bølgen Studio" description="The page you're looking for doesn't exist.">
+  <Navigation />
+
+  <main class="relative z-10 min-h-screen pt-24 sm:pt-32 pb-24 sm:pb-40 flex items-center justify-center">
+    <div class="fixed inset-0 pointer-events-none z-0 bg-[#000d12]">
+      <div class="absolute top-[-10%] left-[20%] w-[60%] h-[60%] bg-cyan-400/5 blur-[150px] rounded-full"></div>
+      <div class="absolute bottom-[20%] right-[10%] w-[50%] h-[50%] bg-blue-300/5 blur-[120px] rounded-full"></div>
+    </div>
+
+    <div class="container mx-auto px-4 sm:px-6 relative z-10 text-center">
+      <span class="text-cyan-500/30 text-8xl sm:text-9xl font-light tracking-tight block mb-8">404</span>
+      <h1 class="text-white text-2xl sm:text-3xl font-light tracking-[0.02em] mb-6">Page not found</h1>
+      <p class="text-white/40 text-sm tracking-[0.04em] font-light max-w-sm mx-auto mb-12">
+        The page you're looking for doesn't exist or has moved.
+      </p>
+      <a
+        href="/"
+        class="inline-flex items-center gap-4 py-3 px-6 border border-white/20 rounded-2xl text-white text-sm tracking-[0.04em] font-light hover:border-cyan-400/40 hover:bg-cyan-400/5 transition-all duration-500"
+      >
+        Back to Home
+      </a>
+    </div>
+  </main>
+</Layout>
