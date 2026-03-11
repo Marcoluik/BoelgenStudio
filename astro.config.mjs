@@ -6,4 +6,14 @@ export default defineConfig({
   integrations: [tailwind(), sitemap()],
   site: 'https://bolgenstudio.dk',
   compressHTML: true,
+  vite: {
+    optimizeDeps: {
+      include: ['gsap', 'three'],
+    },
+    server: {
+      hmr: {
+        overlay: false,
+      },
+    },
+  },
 });

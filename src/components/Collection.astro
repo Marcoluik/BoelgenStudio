@@ -1,5 +1,11 @@
 ---
-import { products } from "./products.astro";
+import type { UnifiedProduct } from "../lib/product-utils";
+
+interface Props {
+  products: UnifiedProduct[];
+}
+
+const { products } = Astro.props;
 ---
 
 {/* Spacer to let hero be visible before collection scrolls up */}
@@ -7,32 +13,32 @@ import { products } from "./products.astro";
 
 <section
   id="shop"
-  class="collection-section relative z-10 pt-48 sm:pt-64 pb-24 sm:pb-32 md:pt-96 md:pb-64 overflow-hidden bg-transparent"
+  class="collection-section relative z-10 pt-28 sm:pt-40 pb-12 sm:pb-24 md:pt-56 md:pb-40 overflow-hidden bg-transparent"
 >
   <div
     class="archive-bg fixed inset-0 pointer-events-none opacity-0 z-0 bg-[#000d12] backdrop-blur-xl"
   >
     <div
-      class="absolute top-[-10%] left-[20%] w-[60%] h-[60%] bg-cyan-400/10 blur-[150px] rounded-full"
+      class="absolute top-[-10%] left-[20%] w-[60%] h-[60%] bg-cyan-400/18 blur-[120px] rounded-full"
     >
     </div>
     <div
-      class="absolute bottom-[20%] right-[10%] w-[50%] h-[50%] bg-blue-300/5 blur-[120px] rounded-full"
+      class="absolute bottom-[20%] right-[10%] w-[50%] h-[50%] bg-blue-300/10 blur-[100px] rounded-full"
     >
     </div>
     <div
-      class="absolute top-[40%] left-[-10%] w-[40%] h-[40%] bg-cyan-600/5 blur-[100px] rounded-full"
+      class="absolute top-[40%] left-[-10%] w-[40%] h-[40%] bg-cyan-600/8 blur-[80px] rounded-full"
     >
     </div>
   </div>
 
-  <div class="container mx-auto px-4 sm:px-6 relative z-10">
+  <div class="container mx-auto px-4 sm:px-6 relative z-10 max-w-7xl">
     {/* Section Title - Rethought: readable hierarchy, organic feel */}
-    <div class="archive-header mb-20 sm:mb-32 md:mb-72 overflow-hidden">
+    <div class="archive-header mb-10 sm:mb-20 md:mb-40 overflow-hidden">
       <div class="flex flex-col md:flex-row md:items-end md:gap-12 gap-6 sm:gap-8">
-        <div>
+        <div class="min-w-0">
           <h2
-            class="text-white/90 text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-light tracking-[-0.02em] leading-[1.1]"
+            class="text-white/90 text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-light tracking-[-0.02em] leading-[1.1]"
           >
             Collection
           </h2>
@@ -48,38 +54,55 @@ import { products } from "./products.astro";
       </div>
     </div>
 
-    <div class="space-y-32 sm:space-y-64 md:space-y-[40rem]">
+    <div class="space-y-16 sm:space-y-32 md:space-y-64">
       {
         products.map((product, index) => (
           <div
             class={`product-row flex flex-col ${index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"} items-center gap-10 sm:gap-16 md:gap-32`}
           >
             {/* Main Visual Container */}
-            <div class="w-full md:w-3/5 relative group">
+            <div class="w-full md:w-3/5 max-w-2xl mx-auto md:mx-0 relative group collection-card">
               <a
-                href={`/product/${product.id}`}
+                href={`/product/${product.handle}`}
                 class="block relative overflow-hidden rounded-2xl bg-[#051117] touch-manipulation active:scale-[0.98] transition-transform"
               >
-                <div class="aspect-[4/5] md:aspect-[16/10] overflow-hidden">
-                  {/* Main Image */}
+                <div class="aspect-[4/5] md:aspect-[16/10] overflow-hidden relative">
+                  {/* Main Image (front) */}
                   <img
                     src={product.mainImage}
                     alt={product.name}
-                    class="absolute inset-0 w-full h-full object-cover transition-all duration-[2.5s] ease-out scale-105 group-hover:scale-110 opacity-100 group-hover:opacity-0"
+                    class="collection-front absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-out scale-105 group-hover:scale-110 opacity-100"
                   />
-                  {/* Back Image (Revealed on hover) */}
+                  {/* Back Image (Revealed on right-side hover) */}
                   <img
                     src={product.backImage}
                     alt={`${product.name} alternate view`}
-                    class="absolute inset-0 w-full h-full object-cover transition-all duration-[2.5s] ease-out scale-110 group-hover:scale-100 opacity-0 group-hover:opacity-100"
+                    class="collection-back absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-out scale-110 opacity-0"
                   />
 
                   {/* The Dark Overlay for depth - Cyan Tinted */}
                   <div class="absolute inset-0 bg-gradient-to-t from-[#000d12]/80 via-transparent to-transparent opacity-60" />
                 </div>
 
-                {/* Hover Interaction Overlay - subtle tint only, no blur so image stays visible */}
-                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-1000 bg-[#000d12]/20">
+                {/* Left zone - shows front: always visible on mobile (no hover), hover-reveal on desktop */}
+                <div class="collection-left absolute left-0 top-0 bottom-0 w-1/2 flex items-center justify-center cursor-pointer z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 touch-manipulation">
+                  <span class="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/30 md:bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm pointer-events-none">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </span>
+                </div>
+                {/* Right zone - shows back */}
+                <div class="collection-right absolute right-0 top-0 bottom-0 w-1/2 flex items-center justify-center cursor-pointer z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 touch-manipulation">
+                  <span class="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/30 md:bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm pointer-events-none">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </span>
+                </div>
+
+                {/* Hover/tap Interaction Overlay - subtle tint only */}
+                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-all duration-500 bg-[#000d12]/20 pointer-events-none">
                   <div class="px-10 py-4 border border-cyan-400/25 rounded-full text-white text-sm tracking-[0.06em] font-light bg-[#001c25]/80 backdrop-blur-sm shadow-lg shadow-black/30">
                     Dive
                   </div>
@@ -88,16 +111,16 @@ import { products } from "./products.astro";
 
               {/* Floating Index Number - Cinematic Detail */}
               <div
-                class={`absolute top-0 ${index % 2 === 0 ? "left-0 sm:-left-8 md:-left-16" : "right-0 sm:-right-8 md:-right-16"} -translate-y-1/2 overflow-hidden pointer-events-none`}
+                class={`absolute top-0 ${index % 2 === 0 ? "left-0 sm:-left-8 md:-left-16" : "right-0 sm:-right-8 md:-right-16"} -translate-y-1/2 overflow-hidden pointer-events-none select-none`}
               >
-                <span class="text-cyan-100/[0.08] text-6xl sm:text-8xl md:text-9xl font-light tracking-tight">
+                <span class="text-cyan-100/[0.08] text-5xl sm:text-8xl md:text-9xl font-light tracking-tight">
                   0{index + 1}
                 </span>
               </div>
 
               {/* Overlapping Piece Name */}
               <div
-                class={`hidden lg:block absolute bottom-12 ${index % 2 === 0 ? "-right-24" : "-left-24"} mix-blend-screen pointer-events-none transition-transform duration-1000 group-hover:translate-y-[-10px]`}
+                class={`hidden lg:block absolute bottom-12 ${index % 2 === 0 ? "-right-24" : "-left-24"} mix-blend-screen pointer-events-none transition-transform duration-400 group-hover:translate-y-[-10px]`}
               >
                 <h3 class="text-cyan-50/70 text-7xl xl:text-8xl font-light tracking-tight leading-none">
                   {product.name.split(" ")[1]}
@@ -106,7 +129,7 @@ import { products } from "./products.astro";
             </div>
 
             {/* Product Description Side */}
-            <div class="w-full md:w-2/5 space-y-10">
+            <div class="w-full md:w-2/5 space-y-8 sm:space-y-10 min-w-0">
               <div class="space-y-6">
                 <div class="flex items-center gap-4">
                   <span class="w-6 h-[2px] rounded-full bg-cyan-600/40" />
@@ -114,7 +137,7 @@ import { products } from "./products.astro";
                     Selection {index + 1}
                   </span>
                 </div>
-                <h4 class="text-white text-3xl sm:text-4xl lg:text-6xl font-light tracking-[0.02em] leading-tight">
+                <h4 class="text-white text-2xl sm:text-4xl lg:text-6xl font-light tracking-[0.02em] leading-tight">
                   {product.subName}
                 </h4>
                 <div class="w-12 h-[2px] rounded-full bg-cyan-500/15" />
@@ -129,11 +152,11 @@ import { products } from "./products.astro";
                   {product.price}
                 </span>
                 <a
-                  href={`/product/${product.id}`}
-                  class="group/link flex items-center gap-4 text-cyan-400/40 hover:text-cyan-100 transition-colors duration-500 text-sm tracking-[0.04em] font-light py-2 -my-2 touch-manipulation"
+                  href={`/product/${product.handle}`}
+                  class="group/link flex items-center gap-4 text-cyan-400/40 hover:text-cyan-100 transition-colors duration-300 text-sm tracking-[0.04em] font-light py-2 -my-2 touch-manipulation"
                 >
                   Details
-                  <div class="w-10 h-[2px] rounded-full bg-cyan-500/10 group-hover/link:bg-cyan-400/50 group-hover/link:w-16 transition-all duration-700" />
+                  <div class="w-10 h-[2px] rounded-full bg-cyan-500/10 group-hover/link:bg-cyan-400/50 group-hover/link:w-16 transition-all duration-400" />
                 </a>
               </div>
             </div>
@@ -142,7 +165,7 @@ import { products } from "./products.astro";
       }
     </div>
 
-    <div class="mt-64"></div>
+    <div class="mt-32"></div>
   </div>
 </section>
 
@@ -155,7 +178,7 @@ import { products } from "./products.astro";
     scrollTrigger: {
       trigger: "body",
       start: "top top",
-      end: "18% top",
+      end: "12% top",
       scrub: true,
     },
     opacity: 1,
@@ -171,6 +194,35 @@ import { products } from "./products.astro";
     duration: 2,
     stagger: 0.2,
     ease: "expo.out",
+  });
+
+  // Mobile: tap left/right to toggle front/back (no hover on touch)
+  document.querySelectorAll(".collection-card").forEach((card) => {
+    const left = card.querySelector(".collection-left");
+    const right = card.querySelector(".collection-right");
+    const front = card.querySelector(".collection-front");
+    const back = card.querySelector(".collection-back");
+    if (!left || !right || !front || !back) return;
+
+    const showFront = () => {
+      (front as HTMLElement).style.opacity = "1";
+      (back as HTMLElement).style.opacity = "0";
+    };
+    const showBack = () => {
+      (front as HTMLElement).style.opacity = "0";
+      (back as HTMLElement).style.opacity = "1";
+    };
+
+    left.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showFront();
+    });
+    right.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      showBack();
+    });
   });
 
   const rows = document.querySelectorAll(".product-row");
@@ -204,5 +256,14 @@ import { products } from "./products.astro";
 <style>
   .product-row {
     will-change: transform, opacity;
+  }
+
+  /* Left zone hover = front, right zone hover = back */
+  .collection-card:has(.collection-right:hover) .collection-front {
+    opacity: 0;
+  }
+  .collection-card:has(.collection-right:hover) .collection-back {
+    opacity: 1;
+    transform: scale(1);
   }
 </style>

@@ -7,10 +7,10 @@ const images = [
 ];
 ---
 
-<section class="py-20 sm:py-32 md:py-64 bg-transparent relative z-20 overflow-hidden">
+<section class="py-12 sm:py-20 md:py-32 bg-transparent relative z-20 overflow-hidden">
     <div class="container mx-auto px-4 sm:px-6">
         <div
-            class="flex flex-col md:flex-row justify-between items-end gap-8 sm:gap-12 mb-16 sm:mb-24"
+            class="flex flex-col md:flex-row justify-between items-end gap-6 sm:gap-8 mb-12 sm:mb-16"
         >
             <div class="space-y-6">
                 <div class="flex items-center gap-4">
@@ -40,18 +40,18 @@ const images = [
             </a>
         </div>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-8">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
             {
                 images.map((img, i) => (
                     <div
-                        class={`feed-item aspect-square overflow-hidden bg-[#051117] rounded-2xl group relative ${i % 2 === 1 ? "mt-8 md:mt-16" : ""}`}
+                        class={`feed-item aspect-square overflow-hidden bg-[#051117] rounded-xl sm:rounded-2xl group relative ${i % 2 === 1 ? "mt-4 sm:mt-8 md:mt-16" : ""}`}
                     >
                         <img
                             src={img}
                             alt="Studio Perspective"
-                            class="w-full h-full object-cover opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all duration-[2s] ease-out grayscale hover:grayscale-0"
+                            class="w-full h-full object-cover opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500 ease-out grayscale hover:grayscale-0"
                         />
-                        <div class="absolute inset-0 bg-cyan-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-1000 pointer-events-none" />
+                        <div class="absolute inset-0 bg-cyan-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                     </div>
                 ))
             }

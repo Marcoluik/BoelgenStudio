@@ -1,5 +1,4 @@
 ---
-import { ClientRouter } from "astro:transitions";
 import Cart from "../components/Cart.astro";
 import CookieConsent from "../components/CookieConsent.astro";
 import Footer from "../components/Footer.astro";
@@ -49,7 +48,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <!-- Canonical URL -->
     <link rel="canonical" href={canonicalURL} />
 
-    <!-- Fonts - Plus Jakarta Sans: soft, rounded curves that match the wave logo -->
+    <!-- Fonts - Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -62,7 +61,6 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
     <!-- Theme color -->
     <meta name="theme-color" content="#08979c" />
-    <ClientRouter />
   </head>
   <body class="antialiased">
     <Cart />
@@ -88,12 +86,22 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         }
       });
 
-      document.addEventListener("astro:after-swap", () => {
+      function initScroll() {
         if (window.location.hash === "#shop") scrollToShop();
         ScrollTrigger.refresh();
-      });
+      }
+      document.addEventListener("astro:after-swap", initScroll);
+      document.addEventListener("DOMContentLoaded", initScroll);
+      if (document.readyState !== "loading") initScroll();
 
-      if (window.location.hash === "#shop") scrollToShop();
+      window.addEventListener("cart-updated", (e) => {
+        const badge = document.getElementById("cart-count-badge");
+        const count = e.detail?.lineCount ?? 0;
+        if (badge) {
+          badge.textContent = String(count);
+          badge.classList.toggle("hidden", count === 0);
+        }
+      });
     </script>
   </body>
 </html>
@@ -128,6 +136,13 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     font-weight: 300;
     letter-spacing: 0.02em;
     min-height: 100%;
+    height: auto;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Prevent horizontal overflow on mobile */
+  img, video {
+    max-width: 100%;
     height: auto;
   }
 

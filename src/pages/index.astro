@@ -4,6 +4,9 @@ import Navigation from "../components/Navigation.astro";
 import Hero from "../components/Hero.astro";
 import Collection from "../components/Collection.astro";
 import StudioFeed from "../components/StudioFeed.astro";
+import { getProductsAtBuild } from "../lib/fetch-products";
+
+const products = await getProductsAtBuild();
 ---
 
 <Layout title="Bølgen | Studio">
@@ -11,7 +14,7 @@ import StudioFeed from "../components/StudioFeed.astro";
 
   <main class="relative z-10">
     <Hero />
-    <Collection />
+    <Collection products={products} />
     <StudioFeed />
   </main>
 </Layout>
