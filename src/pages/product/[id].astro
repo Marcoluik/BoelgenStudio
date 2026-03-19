@@ -36,12 +36,10 @@ const stockMarkerTextClass = stockMarkerAvailable ? (stockMarkerLimited ? "text-
 const stockMarkerLabel = stockMarkerAvailable ? (stockMarkerQty != null ? stockMarkerQty + " tilbage" : "På lager") : "Udsolgt";
 const pageTitle = displaySubName ? product.name + " | " + displaySubName : product.name;
 
-// Size chart with Fit (size down / regular / size up)
-  const sizeChart = [
-  { size: "S", chest: 56, length: 68, sleeve: 63, fit: "Vælg større" },
-  { size: "M", chest: 59, length: 71, sleeve: 65, fit: "Normal" },
-  { size: "L", chest: 62, length: 74, sleeve: 67, fit: "Normal" },
-  { size: "XL", chest: 65, length: 77, sleeve: 69, fit: "Vælg mindre" },
+const sizeChart = [
+    { size: "S", length: "66 cm", chest: "59 cm", sleeve: "61 cm" },
+    { size: "M", length: "71 cm", chest: "63 cm", sleeve: "63 cm" },
+    { size: "L", length: "74 cm", chest: "66 cm", sleeve: "64 cm" },
 ];
 ---
 
@@ -197,46 +195,35 @@ const pageTitle = displaySubName ? product.name + " | " + displaySubName : produ
                                 <button class="size-guide-trigger text-cyan-400/60 hover:text-cyan-400 text-sm tracking-[0.04em] font-light transition-colors border-b border-cyan-500/20 min-h-[44px] touch-manipulation">Størrelsesguide</button>
                             </div>
 
-                            {/* Size Guide Modal - centered, scrollable */}
-                            <div id="size-guide-modal" class="fixed inset-0 z-[110] flex flex-col items-center justify-center p-3 sm:p-6 invisible pointer-events-none overflow-y-auto overscroll-contain">
-                                <div class="absolute inset-0 bg-black/80 backdrop-blur-md opacity-0 transition-opacity duration-500 modal-backdrop"></div>
-                                <div class="relative bg-[#001c25] border border-white/5 rounded-2xl p-6 sm:p-8 md:p-12 max-w-2xl w-full max-h-[85vh] overflow-y-auto translate-y-4 opacity-0 transition-all duration-500 modal-content shrink-0 shadow-2xl">
-                                    <button class="absolute top-6 right-6 text-white/20 hover:text-white transition-colors close-modal text-sm tracking-wide font-light z-10">Luk</button>
-                                    <div class="space-y-12">
-                                        <div class="space-y-4">
-                                            <h3 class="text-white text-3xl font-light tracking-wide italic">Størrelsesguide</h3>
-                                            <div class="w-10 h-[2px] rounded-full bg-cyan-500/20"></div>
-                                        </div>
-                                        <div class="overflow-x-auto">
-                                            <table class="w-full text-left border-collapse">
-                                                <thead>
-                                                    <tr class="border-b border-white/10">
-                                                        <th class="py-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Størrelse</th>
-                                                        <th class="py-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Pasform</th>
-                                                        <th class="py-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Bryst (cm)</th>
-                                                        <th class="py-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Længde (cm)</th>
-                                                        <th class="py-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Ærme (cm)</th>
+                            {/* Size Guide Modal */}
+                            <div id="size-guide-modal" class="fixed inset-0 z-[110] flex items-center justify-center p-4 invisible pointer-events-none">
+                                <div class="absolute inset-0 bg-black/25 opacity-0 transition-opacity duration-200 modal-backdrop"></div>
+                                <div class="relative w-full max-w-lg rounded-lg bg-[#07151b] opacity-0 translate-y-2 transition-all duration-200 modal-content">
+                                    <div class="flex items-center justify-between px-4 sm:px-6 py-4">
+                                        <h3 class="text-white text-base sm:text-lg font-light tracking-[0.04em]">Størrelsesguide</h3>
+                                        <button class="close-modal text-white/45 hover:text-white transition-colors text-sm tracking-[0.04em] min-h-[44px] px-2">Luk</button>
+                                    </div>
+                                    <div class="px-4 sm:px-6 py-4">
+                                        <table class="w-full text-left border-collapse text-[12px]">
+                                            <thead>
+                                                <tr class="border-b border-white/10">
+                                                    <th class="py-3 pr-4 text-white/45 text-[10px] tracking-[0.08em] font-light">Størrelse</th>
+                                                    <th class="py-3 pr-4 text-white/45 text-[10px] tracking-[0.08em] font-light">Længde</th>
+                                                    <th class="py-3 pr-4 text-white/45 text-[10px] tracking-[0.08em] font-light">Bryst</th>
+                                                    <th class="py-3 text-white/45 text-[10px] tracking-[0.08em] font-light">Ærme</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {sizeChart.map((row, i) => (
+                                                    <tr class={i < sizeChart.length - 1 ? "border-b border-white/5" : ""}>
+                                                        <td class="py-3 pr-4 text-white">{row.size}</td>
+                                                        <td class="py-3 pr-4 text-white/60 whitespace-nowrap">{row.length}</td>
+                                                        <td class="py-3 pr-4 text-white/60 whitespace-nowrap">{row.chest}</td>
+                                                        <td class="py-3 text-white/60 whitespace-nowrap">{row.sleeve}</td>
                                                     </tr>
-                                                </thead>
-                                                <tbody class="text-[11px] tracking-wide">
-                                                    {sizeChart.map((row, i) => (
-                                                        <tr class={i < sizeChart.length - 1 ? "border-b border-white/5" : ""}>
-                                                            <td class="py-6 text-white">{row.size}</td>
-                                                            <td class="py-6 text-cyan-400/80">{row.fit}</td>
-                                                            <td class="py-6 text-white/60">{row.chest}</td>
-                                                            <td class="py-6 text-white/60">{row.length}</td>
-                                                            <td class="py-6 text-white/60">{row.sleeve}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <p class="text-white/40 text-xs leading-relaxed">
-                                            Afslappet, filmisk pasform. Mellem størrelser? Vælg større for et oversized look.
-                                        </p>
-                                        <p class="text-white/30 text-[9px] tracking-wide leading-relaxed italic">
-                                            * Alle mål er taget fladt. Vores stykker er designet til en afslappet, filmisk pasform.
-                                        </p>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
@@ -746,12 +733,12 @@ const pageTitle = displaySubName ? product.name + " | " + displaySubName : produ
             (modalContent as HTMLElement).style.transform = "translateY(0)";
             return;
         }
-        gsap.to(modalBackdrop, { opacity: 1, duration: 0.5 });
+        gsap.to(modalBackdrop, { opacity: 1, duration: 0.2 });
         gsap.to(modalContent, {
             opacity: 1,
             y: 0,
-            duration: 0.8,
-            ease: "expo.out",
+            duration: 0.22,
+            ease: "power2.out",
         });
     };
 
@@ -764,10 +751,10 @@ const pageTitle = displaySubName ? product.name + " | " + displaySubName : produ
             document.body.style.touchAction = "";
             return;
         }
-        gsap.to(modalContent, { opacity: 0, y: 20, duration: 0.5 });
+        gsap.to(modalContent, { opacity: 0, y: 8, duration: 0.18 });
         gsap.to(modalBackdrop, {
             opacity: 0,
-            duration: 0.5,
+            duration: 0.18,
             onComplete: () => {
                 modal.classList.add("invisible", "pointer-events-none");
                 modal.classList.remove("modal-open");

@@ -12,13 +12,18 @@ function normalizeValue(value: string): string {
     .toLowerCase();
 }
 
+function isBolgenProduct(product: Pick<UnifiedProduct, "handle" | "name">): boolean {
+  return (
+    normalizeValue(product.handle).includes("bolgen") ||
+    normalizeValue(product.name).includes("bolgen")
+  );
+}
+
 function applyLocalImages(products: UnifiedProduct[], localImageSets: Awaited<ReturnType<typeof getBolgenLocalImageSets>>): UnifiedProduct[] {
   if (localImageSets.length === 0) return products;
 
   return products.map((product, index) => {
-    const matchesBolgen =
-      normalizeValue(product.handle).includes("bolgen") ||
-      normalizeValue(product.name).includes("bolgen");
+    const matchesBolgen = isBolgenProduct(product);
 
     if (!matchesBolgen) {
       return product;
@@ -112,4 +117,42 @@ export async function getProductsAtBuild(): Promise<UnifiedProduct[]> {
   }
 
   return getFallbackProducts();
+}
+
+function createHomepageColorVariants(product: UnifiedProduct): UnifiedProduct[] {
+  const preferredColors = ["Hvid", "Sort"];
+
+  const colorCards = preferredColors
+    .map((color) =>
+      product.colorGroups.find((group) => normalizeValue(group.color) === normalizeValue(color))
+    )
+    .filter((group): group is UnifiedProduct["colorGroups"][number] => Boolean(group));
+
+  if (colorCards.length === 0) {
+    return [product];
+  }
+
+  return colorCards.map((group) => ({
+    ...product,
+    id: `${product.id}-${normalizeValue(group.color)}`,
+    name: product.name,
+    subName: group.color,
+    mainImage: group.mainImage,
+    backImage: group.backImage,
+    gallery: group.gallery,
+    variants: group.variants.length > 0 ? group.variants : product.variants,
+    colorGroups: [group],
+    colors: [group.color],
+  }));
+}
+
+export async function getHomepageProductsAtBuild(): Promise<UnifiedProduct[]> {
+  const products = await getProductsAtBuild();
+  const bolgenProduct = products.find((product) => isBolgenProduct(product));
+
+  if (!bolgenProduct) {
+    return products.slice(0, 2);
+  }
+
+  return createHomepageColorVariants(bolgenProduct);
 }

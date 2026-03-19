@@ -4,9 +4,9 @@ import Navigation from "../components/Navigation.astro";
 import Hero from "../components/Hero.astro";
 import Collection from "../components/Collection.astro";
 import StudioFeed from "../components/StudioFeed.astro";
-import { getProductsAtBuild } from "../lib/fetch-products";
+import { getHomepageProductsAtBuild } from "../lib/fetch-products";
 
-const products = await getProductsAtBuild();
+const products = await getHomepageProductsAtBuild();
 ---
 
 <Layout title="Bølgen | Studio" preloadImage="/hero-2-Gv_c13hE.jpeg">

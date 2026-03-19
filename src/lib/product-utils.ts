@@ -56,6 +56,13 @@ function getOptionIndex(options: { name: string; values: string[] }[] | undefine
   return i >= 0 ? i : -1;
 }
 
+function formatMoneyAmount(amount: string): string {
+  return amount
+    .replace(/(\.\d*?[1-9])0+$/u, "$1")
+    .replace(/\.0+$/u, "")
+    .replace(/\.$/u, "");
+}
+
 export function shopifyToUnified(p: ShopifyProduct): UnifiedProduct {
   const colorOptionNames = ["Color", "Colour", "Farve"];
   const sizeOptionNames = ["Size", "Størrelse"];
@@ -93,7 +100,7 @@ export function shopifyToUnified(p: ShopifyProduct): UnifiedProduct {
         title: node.title,
         availableForSale: node.availableForSale,
         quantityAvailable: node.quantityAvailable ?? undefined,
-        price: `${node.price.amount} ${node.price.currencyCode}`,
+        price: `${formatMoneyAmount(node.price.amount)} ${node.price.currencyCode}`,
         size,
         color,
         variantImage: node.image?.url,
@@ -146,8 +153,8 @@ export function shopifyToUnified(p: ShopifyProduct): UnifiedProduct {
     handle: p.handle,
     name: name || p.title,
     subName,
-    price: `${priceAmount} ${currencyCode}`,
-    priceAmount,
+    price: `${formatMoneyAmount(priceAmount)} ${currencyCode}`,
+    priceAmount: formatMoneyAmount(priceAmount),
     currencyCode,
     description: (p.description ?? "").replace(/<[^>]*>/g, "").trim(),
     mainImage,
