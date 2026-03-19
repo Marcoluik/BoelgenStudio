@@ -5,7 +5,7 @@
 <section
   class="hero-container fixed inset-0 w-full h-[100svh] z-0 overflow-hidden"
 >
-  <div class="absolute inset-0 h-full w-full pointer-events-none bg-black">
+  <div class="hero-visual absolute inset-0 h-full w-full pointer-events-none bg-black">
     <video
       autoplay
       muted
@@ -61,29 +61,59 @@
   import { ScrollTrigger } from "gsap/ScrollTrigger";
   gsap.registerPlugin(ScrollTrigger);
 
+  const heroVideo = document.getElementById("hero-video") as HTMLVideoElement | null;
+  if (heroVideo) {
+    const markReady = () => heroVideo.classList.add("is-ready");
+    heroVideo.addEventListener("loadeddata", markReady, { once: true });
+    heroVideo.addEventListener("canplay", markReady, { once: true });
+    heroVideo.addEventListener("playing", markReady, { once: true });
+    if (heroVideo.readyState >= 2) markReady();
+    heroVideo.play().catch(() => {});
+  }
+
+  ScrollTrigger.getById("hero-visual-fade")?.kill();
+  ScrollTrigger.getById("hero-content-fade")?.kill();
+
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (!reduceMotion) {
-    const isMobile = window.matchMedia("(max-width: 767px)").matches;
-
-    gsap.to(".hero-video", {
+    gsap.to(".hero-visual", {
       scrollTrigger: {
-        trigger: "body",
+        id: "hero-visual-fade",
+        trigger: ".hero-container",
         start: "top top",
-        end: "15% top",
+        end: "35% top",
         scrub: true,
       },
-      filter: isMobile ? "blur(12px)" : "blur(50px)",
+      yPercent: 8,
+      scale: 1.05,
       opacity: 0,
+      ease: "none",
     });
 
     gsap.to(".hero-content", {
       scrollTrigger: {
-        trigger: "body",
+        id: "hero-content-fade",
+        trigger: ".hero-container",
         start: "top top",
-        end: "12% top",
+        end: "30% top",
         scrub: true,
       },
       opacity: 0,
+      ease: "none",
     });
   }
 </script>
+
+<style>
+  .hero-video {
+    opacity: 0;
+    transition: opacity 320ms ease;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: opacity, transform;
+  }
+
+  .hero-video.is-ready {
+    opacity: 1;
+  }
+</style>
