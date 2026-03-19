@@ -5,24 +5,28 @@
 <section
   class="hero-container fixed inset-0 w-full h-[100svh] z-0 overflow-hidden"
 >
-  <div class="absolute inset-0 h-full w-full pointer-events-none">
+  <div class="hero-visual absolute inset-0 h-full w-full pointer-events-none">
+    <img
+      src="/hero-2-Gv_c13hE.jpeg"
+      alt="Hav"
+      class="hero-poster w-full h-full object-cover"
+      loading="eager"
+      decoding="async"
+    />
+
     <video
       autoplay
       muted
       loop
       playsinline
-      preload="auto"
-      class="hero-media block w-full h-full object-cover"
+      webkit-playsinline="true"
+      preload="metadata"
+      poster="/hero-2-Gv_c13hE.jpeg"
+      class="hero-video w-full h-full object-cover"
       id="hero-video"
     >
       <source src="/hero-video.mp4" type="video/mp4" />
     </video>
-
-    <img
-      src="/hero-2-Gv_c13hE.jpeg"
-      alt="Hav"
-      class="hero-media hidden w-full h-full object-cover"
-    />
 
     <div
       class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40"
@@ -66,15 +70,56 @@
   import { ScrollTrigger } from "gsap/ScrollTrigger";
   gsap.registerPlugin(ScrollTrigger);
 
+  const heroContainer = document.querySelector<HTMLElement>(".hero-container");
+  const heroVideo = document.getElementById("hero-video") as HTMLVideoElement | null;
+
+  function showVideoIfPlayable() {
+    if (!heroContainer || !heroVideo) return;
+    let ready = false;
+
+    const markReady = () => {
+      if (ready) return;
+      ready = true;
+      heroContainer.classList.add("hero-video-ready");
+    };
+
+    const failToPoster = () => {
+      if (ready) return;
+      heroContainer.classList.add("hero-video-failed");
+    };
+
+    heroVideo.addEventListener("loadeddata", markReady, { once: true });
+    heroVideo.addEventListener("canplay", markReady, { once: true });
+    heroVideo.addEventListener("playing", markReady, { once: true });
+    heroVideo.addEventListener("error", failToPoster, { once: true });
+    heroVideo.addEventListener("stalled", failToPoster, { once: true });
+
+    // If decoding/playback is blocked on production devices, keep poster visible.
+    window.setTimeout(() => {
+      if (!ready && heroVideo.readyState < 2) failToPoster();
+    }, 3000);
+
+    const playPromise = heroVideo.play();
+    if (playPromise && typeof playPromise.catch === "function") {
+      playPromise.catch(() => failToPoster());
+    }
+
+    if (heroVideo.readyState >= 2) {
+      markReady();
+    }
+  }
+
+  showVideoIfPlayable();
+
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (!reduceMotion) {
     const isMobile = window.matchMedia("(max-width: 767px)").matches;
 
-    gsap.to(".hero-media", {
+    gsap.to(".hero-visual", {
       scrollTrigger: {
-        trigger: "body",
+        trigger: ".hero-container",
         start: "top top",
-        end: "15% top",
+        end: "35% top",
         scrub: true,
       },
       filter: isMobile ? "blur(12px)" : "blur(50px)",
@@ -92,3 +137,25 @@
     });
   }
 </script>
+
+<style>
+  .hero-poster,
+  .hero-video {
+    position: absolute;
+    inset: 0;
+  }
+
+  .hero-video {
+    opacity: 0;
+    transition: opacity 500ms ease;
+    will-change: opacity;
+  }
+
+  .hero-container.hero-video-ready .hero-video {
+    opacity: 1;
+  }
+
+  .hero-container.hero-video-failed .hero-video {
+    display: none;
+  }
+</style>
