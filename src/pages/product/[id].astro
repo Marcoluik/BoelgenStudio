@@ -90,7 +90,7 @@ const pageTitle = displaySubName ? product.name + " | " + displaySubName : produ
                 <div class="space-y-4 sm:space-y-6" id="gallery-section">
                     <div class="relative">
                         <div
-                            class="gallery-main aspect-[3/4] max-h-[70vh] min-h-[280px] overflow-hidden bg-[#051117] rounded-2xl border border-white/5"
+                            class="gallery-main aspect-[4/5] sm:aspect-[3/4] max-h-[62svh] sm:max-h-[70vh] min-h-[320px] sm:min-h-[280px] overflow-hidden bg-[#051117] rounded-2xl border border-white/5"
                         >
                             <img
                                 src={firstColorGroup.mainImage}
@@ -107,16 +107,16 @@ const pageTitle = displaySubName ? product.name + " | " + displaySubName : produ
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4" id="gallery-thumbnails">
-                        <div class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl" data-index="0">
+                    <div class="grid grid-cols-4 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4" id="gallery-thumbnails">
+                        <div class="aspect-square sm:aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl" data-index="0">
                             <img src={firstColorGroup.mainImage} alt={product.name + " forside"} class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-400 thumbnail-img" />
                         </div>
                         {firstColorGroup.gallery.map((img, i) => (
-                            <div class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl" data-index={i + 1}>
+                            <div class="aspect-square sm:aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl" data-index={i + 1}>
                                 <img src={img} alt={product.name + " detalje"} class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-400 thumbnail-img" />
                             </div>
                         ))}
-                        <div class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl" data-index={firstColorGroup.gallery.length + 1}>
+                        <div class="aspect-square sm:aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl" data-index={firstColorGroup.gallery.length + 1}>
                             <img src={firstColorGroup.backImage} alt={product.name + " bagside"} class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-400 thumbnail-img" />
                         </div>
                     </div>
@@ -467,7 +467,7 @@ const pageTitle = displaySubName ? product.name + " | " + displaySubName : produ
                                     href={`/product/${p.handle}`}
                                     class="group relative block overflow-hidden"
                                 >
-                                    <div class="aspect-[16/9] overflow-hidden bg-[#051117] rounded-2xl border border-white/5 relative">
+                                    <div class="aspect-[4/5] sm:aspect-[16/9] overflow-hidden bg-[#051117] rounded-2xl border border-white/5 relative">
                                         <img
                                             src={p.mainImage}
                                             alt={p.name}
