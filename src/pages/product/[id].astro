@@ -15,14 +15,37 @@ export async function getStaticPaths() {
 }
 
 const { product, otherProducts } = Astro.props;
+const colorGroups = product.colorGroups ?? [];
+const hasColors = (product.colors?.length ?? 0) > 1;
+const firstColorGroup = colorGroups[0] ?? { mainImage: product.mainImage, backImage: product.backImage, gallery: product.gallery, variants: product.variants };
 const availableCount = product.variants.filter((v) => v.availableForSale).length;
 const totalVariants = product.variants.length;
 const isSoldOut = totalVariants > 0 && availableCount === 0;
 const isLimited = availableCount > 0 && availableCount < totalVariants;
 const hasVariants = totalVariants > 0;
+const variantsForStock = firstColorGroup.variants.length > 0 ? firstColorGroup.variants : product.variants;
+const firstAvailableVariant = variantsForStock.find((v) => v.availableForSale) ?? variantsForStock[0];
+const displaySubName = product.subName && product.subName !== product.name ? product.subName : null;
+
+const stockMarkerAvailable = firstAvailableVariant?.availableForSale ?? false;
+const stockMarkerQty = firstAvailableVariant?.quantityAvailable;
+const stockMarkerLimited = stockMarkerAvailable && stockMarkerQty != null && stockMarkerQty <= 5;
+const stockMarkerBorder = stockMarkerAvailable ? (stockMarkerLimited ? "bg-amber-950/20 border-amber-900/20" : "bg-emerald-950/20 border-emerald-900/20") : "bg-red-950/20 border-red-900/20";
+const stockMarkerDot = stockMarkerAvailable ? (stockMarkerLimited ? "bg-amber-500" : "bg-emerald-500") : "bg-red-500 animate-pulse";
+const stockMarkerTextClass = stockMarkerAvailable ? (stockMarkerLimited ? "text-amber-400" : "text-emerald-400") : "text-red-400";
+const stockMarkerLabel = stockMarkerAvailable ? (stockMarkerQty != null ? stockMarkerQty + " tilbage" : "På lager") : "Udsolgt";
+const pageTitle = displaySubName ? product.name + " | " + displaySubName : product.name;
+
+// Size chart with Fit (size down / regular / size up)
+  const sizeChart = [
+  { size: "S", chest: 56, length: 68, sleeve: 63, fit: "Vælg større" },
+  { size: "M", chest: 59, length: 71, sleeve: 65, fit: "Normal" },
+  { size: "L", chest: 62, length: 74, sleeve: 67, fit: "Normal" },
+  { size: "XL", chest: 65, length: 77, sleeve: 69, fit: "Vælg mindre" },
+];
 ---
 
-<Layout title={`${product.name} | ${product.subName}`}>
+<Layout title={pageTitle}>
     <Navigation />
 
     {/* Fixed Oceanic Background */}
@@ -37,13 +60,13 @@ const hasVariants = totalVariants > 0;
         </div>
     </div>
 
-    <main class="relative z-10 min-h-screen pt-20 sm:pt-24 pb-16 sm:pb-24">
+    <main class="relative z-10 min-h-screen min-h-[100dvh] pt-[max(4.5rem,env(safe-area-inset-top))] sm:pt-24 pb-14 sm:pb-24">
         <div class="container mx-auto px-4 sm:px-6 max-w-6xl">
             {/* Back to Archive Link */}
-            <div class="mb-12">
+            <div class="mb-8 sm:mb-12">
                 <a
                     href="/#shop"
-                    class="group inline-flex items-center gap-4 py-2 -my-2 text-cyan-100/30 hover:text-cyan-100 transition-colors duration-500 text-sm tracking-[0.04em] font-light touch-manipulation"
+                    class="group inline-flex items-center gap-4 py-2 px-1 -my-2 text-cyan-100/30 hover:text-cyan-100 transition-colors duration-500 text-sm tracking-[0.04em] font-light touch-manipulation min-h-[44px]"
                 >
                     <svg
                         width="24"
@@ -56,128 +79,85 @@ const hasVariants = totalVariants > 0;
                         <line y1="0.5" x2="24" y2="0.5" stroke="currentColor"
                         ></line>
                     </svg>
-                    Back to Collection
+                    Tilbage til kollektion
                 </a>
             </div>
 
             <div
-                class="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-20 items-start"
+                class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-12 lg:gap-20 items-start"
             >
-                {/* Gallery Section */}
-                <div class="space-y-6">
-                    <div
-                        class="gallery-main aspect-[3/4] max-h-[70vh] min-h-[280px] overflow-hidden bg-[#051117] group rounded-2xl border border-white/5 relative"
-                    >
-                        <img
-                            src={product.mainImage}
-                            alt={product.name}
-                            class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            id="main-image"
-                        />
-                        {/* Left nav zone - prev: always visible on mobile (no hover), hover-reveal on desktop */}
-                        <button
-                            type="button"
-                            class="gallery-prev absolute left-0 top-0 bottom-0 w-1/4 min-w-[60px] flex items-center justify-start pl-2 sm:pl-4 cursor-pointer z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:bg-white/5 transition-opacity duration-300 touch-manipulation"
-                            aria-label="Previous image"
+                {/* Gallery Section - images update when color changes */}
+                <div class="space-y-4 sm:space-y-6" id="gallery-section">
+                    <div class="relative">
+                        <div
+                            class="gallery-main aspect-[3/4] max-h-[70vh] min-h-[280px] overflow-hidden bg-[#051117] rounded-2xl border border-white/5"
                         >
-                            <span class="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/30 md:bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm">
-                                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
-                                </svg>
-                            </span>
+                            <img
+                                src={firstColorGroup.mainImage}
+                                alt={product.name}
+                                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                id="main-image"
+                            />
+                        </div>
+                        <button type="button" class="gallery-prev absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-30 w-11 h-11 sm:w-12 sm:h-12 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-black/55 hover:bg-black/70 text-white cursor-pointer touch-manipulation" aria-label="Forrige" id="gallery-prev-btn">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                         </button>
-                        {/* Right nav zone - next */}
-                        <button
-                            type="button"
-                            class="gallery-next absolute right-0 top-0 bottom-0 w-1/4 min-w-[60px] flex items-center justify-end pr-2 sm:pr-4 cursor-pointer z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:bg-white/5 transition-opacity duration-300 touch-manipulation"
-                            aria-label="Next image"
-                        >
-                            <span class="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/30 md:bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm">
-                                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </span>
+                        <button type="button" class="gallery-next absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-30 w-11 h-11 sm:w-12 sm:h-12 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-black/55 hover:bg-black/70 text-white cursor-pointer touch-manipulation" aria-label="Næste" id="gallery-next-btn">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4">
-                        <div
-                            class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl"
-                        >
-                            <img
-                                src={product.mainImage}
-                                alt={`${product.name} front detail`}
-                                class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-400"
-                            />
+                    <div class="grid grid-cols-3 gap-2 sm:gap-3 md:gap-4" id="gallery-thumbnails">
+                        <div class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl" data-index="0">
+                            <img src={firstColorGroup.mainImage} alt={product.name + " forside"} class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-400 thumbnail-img" />
                         </div>
-                        {
-                            product.gallery.map((img) => (
-                                <div class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl">
-                                    <img
-                                        src={img}
-                                        alt={`${product.name} detail`}
-                                        class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-400"
-                                    />
-                                </div>
-                            ))
-                        }
-                        <div
-                            class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl"
-                        >
-                            <img
-                                src={product.backImage}
-                                alt={`${product.name} back view`}
-                                class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-400"
-                            />
+                        {firstColorGroup.gallery.map((img, i) => (
+                            <div class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl" data-index={i + 1}>
+                                <img src={img} alt={product.name + " detalje"} class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-400 thumbnail-img" />
+                            </div>
+                        ))}
+                        <div class="aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl" data-index={firstColorGroup.gallery.length + 1}>
+                            <img src={firstColorGroup.backImage} alt={product.name + " bagside"} class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-400 thumbnail-img" />
                         </div>
                     </div>
                 </div>
 
                 {/* Info Section */}
-                <div class="lg:sticky lg:top-40 space-y-12 product-info relative z-10">
+                <div class="lg:sticky lg:top-40 space-y-9 sm:space-y-12 product-info relative z-10">
                     <div>
                         <div class="flex items-center gap-4 mb-6">
                             <span class="w-6 h-[2px] rounded-full bg-cyan-700/50"></span>
-                            <span
-                                class="text-cyan-500/50 text-xs tracking-[0.08em] font-light"
-                                >Selection detail</span
-                            >
+                            <span class="text-cyan-500/50 text-xs tracking-[0.08em] font-light">
+                                Produktdetaljer
+                            </span>
                         </div>
-                        <h1
-                            class="text-white text-3xl sm:text-4xl lg:text-6xl font-light tracking-[0.02em] mb-4 leading-tight"
-                        >
+                        <h1 class="text-white text-2xl sm:text-4xl lg:text-6xl font-light tracking-[0.02em] mb-3 sm:mb-4 leading-tight">
                             {product.name}
                         </h1>
-                        <p
-                            class="text-white/40 text-base tracking-[0.04em] mb-8 font-light"
-                        >
-                            {product.subName}
-                        </p>
-
-                        {/* Stock Marker - uses real availability from Shopify */}
-                        {hasVariants && (
+                        {displaySubName && <p class="text-white/40 text-base tracking-[0.04em] mb-8 font-light">{displaySubName}</p>}
+                        {/* Stock Marker - shows availability for selected color/size */}
+                        {hasVariants && firstAvailableVariant && (
                             <div
-                                class={`flex items-center gap-3 py-2 px-4 rounded-full w-fit border ${
-                                    isSoldOut ? "bg-red-950/20 border-red-900/20" : isLimited ? "bg-amber-950/20 border-amber-900/20" : "bg-emerald-950/20 border-emerald-900/20"
-                                }`}
+                                id="stock-marker"
+                                class={"flex items-center gap-3 py-2 px-4 rounded-full w-fit border " + stockMarkerBorder}
                             >
                                 <span
-                                    class={`w-1.5 h-1.5 rounded-full ${isSoldOut ? "bg-red-500 animate-pulse" : isLimited ? "bg-amber-500" : "bg-emerald-500"}`}
+                                    id="stock-marker-dot"
+                                    class={"w-1.5 h-1.5 rounded-full " + stockMarkerDot}
                                 ></span>
                                 <span
-                                    class={`text-xs tracking-[0.04em] font-light ${isSoldOut ? "text-red-400" : isLimited ? "text-amber-400" : "text-emerald-400"}`}
+                                    id="stock-marker-text"
+                                    class={"text-xs tracking-[0.04em] font-light " + stockMarkerTextClass}
                                 >
-                                    {isSoldOut ? "Sold out" : isLimited ? `${availableCount} of ${totalVariants} sizes available` : "In stock"}
+                                    {stockMarkerLabel}
                                 </span>
                             </div>
                         )}
                     </div>
 
                     <div class="space-y-6">
-                        <p
-                            class="text-white/80 text-base leading-relaxed font-light tracking-wide max-w-md"
-                        >
-                            {product.description}
+                        <p class="text-white/80 text-base leading-relaxed font-light tracking-wide max-w-md">
+                            {product.description.length > 150 ? product.description.slice(0, 150).trim() + "..." : product.description}
                         </p>
                         <p
                             class="text-white text-3xl font-light tracking-wide mt-8"
@@ -187,223 +167,118 @@ const hasVariants = totalVariants > 0;
                     </div>
 
                     <div class="space-y-10 relative z-10">
+                        {/* Color selector - shown first when product has multiple colors */}
+                        {hasColors && (
+                            <div class="space-y-4">
+                                <span class="text-white/50 text-[10px] tracking-[0.08em] block font-light">Vælg farve</span>
+                                <div class="flex gap-2.5 sm:gap-3 flex-wrap" id="color-buttons-container">
+                                    {colorGroups.map((cg) => (
+                                        <button
+                                            type="button"
+                                            class="color-btn min-h-[44px] px-4 sm:px-5 border border-white/10 text-[11px] tracking-wide transition-all duration-500 rounded-xl bg-white/[0.02] touch-manipulation cursor-pointer select-none text-white/60 hover:border-cyan-500/60 hover:text-white active:scale-95"
+                                            data-color={cg.color}
+                                            data-main-image={cg.mainImage}
+                                            data-back-image={cg.backImage}
+                                            data-gallery={JSON.stringify(cg.gallery)}
+                                            data-variants={JSON.stringify(cg.variants)}
+                                            data-selected={cg.color === firstColorGroup.color ? "true" : undefined}
+                                        >
+                                            {cg.color}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Size selector - shown after/below color */}
                         <div class="space-y-4">
-                            <div
-                                class="flex justify-between items-end max-w-xs"
-                            >
-                                <span
-                                    class="text-white/50 text-[10px] tracking-[0.08em] block font-light"
-                                >
-                                    Select Size
-                                </span>
-                                <button
-                                    class="size-guide-trigger text-cyan-400/60 hover:text-cyan-400 text-sm tracking-[0.04em] font-light transition-colors border-b border-cyan-500/20"
-                                    >Size Guide</button
-                                >
+                            <div class="flex justify-between items-end max-w-xs">
+                                <span class="text-white/50 text-[10px] tracking-[0.08em] block font-light">Vælg størrelse</span>
+                                <button class="size-guide-trigger text-cyan-400/60 hover:text-cyan-400 text-sm tracking-[0.04em] font-light transition-colors border-b border-cyan-500/20 min-h-[44px] touch-manipulation">Størrelsesguide</button>
                             </div>
 
-                            {/* Size Guide Modal */}
-                            <div
-                                id="size-guide-modal"
-                                class="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 invisible pointer-events-none"
-                            >
-                                <div
-                                    class="absolute inset-0 bg-black/80 backdrop-blur-md opacity-0 transition-opacity duration-500 modal-backdrop"
-                                >
-                                </div>
-                                <div
-                                    class="relative bg-[#001c25] border border-white/5 rounded-2xl p-6 sm:p-8 md:p-12 max-w-2xl w-full max-h-[90vh] overflow-y-auto translate-y-10 opacity-0 transition-all duration-700 modal-content"
-                                >
-                                    <button
-                                        class="absolute top-6 right-6 text-white/20 hover:text-white transition-colors close-modal text-sm tracking-wide font-light"
-                                        >Close</button
-                                    >
-
+                            {/* Size Guide Modal - centered, scrollable */}
+                            <div id="size-guide-modal" class="fixed inset-0 z-[110] flex flex-col items-center justify-center p-3 sm:p-6 invisible pointer-events-none overflow-y-auto overscroll-contain">
+                                <div class="absolute inset-0 bg-black/80 backdrop-blur-md opacity-0 transition-opacity duration-500 modal-backdrop"></div>
+                                <div class="relative bg-[#001c25] border border-white/5 rounded-2xl p-6 sm:p-8 md:p-12 max-w-2xl w-full max-h-[85vh] overflow-y-auto translate-y-4 opacity-0 transition-all duration-500 modal-content shrink-0 shadow-2xl">
+                                    <button class="absolute top-6 right-6 text-white/20 hover:text-white transition-colors close-modal text-sm tracking-wide font-light z-10">Luk</button>
                                     <div class="space-y-12">
                                         <div class="space-y-4">
-                                            <h3
-                                                class="text-white text-3xl font-light tracking-wide italic"
-                                            >
-                                                Size Guide
-                                            </h3>
-                                            <div
-                                                class="w-10 h-[2px] rounded-full bg-cyan-500/20"
-                                            >
-                                            </div>
+                                            <h3 class="text-white text-3xl font-light tracking-wide italic">Størrelsesguide</h3>
+                                            <div class="w-10 h-[2px] rounded-full bg-cyan-500/20"></div>
                                         </div>
-
                                         <div class="overflow-x-auto">
-                                            <table
-                                                class="w-full text-left border-collapse"
-                                            >
+                                            <table class="w-full text-left border-collapse">
                                                 <thead>
-                                                    <tr
-                                                        class="border-b border-white/10"
-                                                    >
-                                                        <th
-                                                            class="py-4 text-white/40 text-[10px] tracking-[0.06em]  font-light"
-                                                            >Size</th
-                                                        >
-                                                        <th
-                                                            class="py-4 text-white/40 text-[10px] tracking-[0.06em]  font-light"
-                                                            >Chest (cm)</th
-                                                        >
-                                                        <th
-                                                            class="py-4 text-white/40 text-[10px] tracking-[0.06em]  font-light"
-                                                            >Length (cm)</th
-                                                        >
-                                                        <th
-                                                            class="py-4 text-white/40 text-[10px] tracking-[0.06em]  font-light"
-                                                            >Sleeve (cm)</th
-                                                        >
+                                                    <tr class="border-b border-white/10">
+                                                        <th class="py-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Størrelse</th>
+                                                        <th class="py-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Pasform</th>
+                                                        <th class="py-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Bryst (cm)</th>
+                                                        <th class="py-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Længde (cm)</th>
+                                                        <th class="py-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Ærme (cm)</th>
                                                     </tr>
                                                 </thead>
-                                                <tbody
-                                                    class="text-[11px] tracking-wide "
-                                                >
-                                                    <tr
-                                                        class="border-b border-white/5"
-                                                    >
-                                                        <td
-                                                            class="py-6 text-white"
-                                                            >S</td
-                                                        >
-                                                        <td
-                                                            class="py-6 text-white/60"
-                                                            >56</td
-                                                        >
-                                                        <td
-                                                            class="py-6 text-white/60"
-                                                            >68</td
-                                                        >
-                                                        <td
-                                                            class="py-6 text-white/60"
-                                                            >63</td
-                                                        >
-                                                    </tr>
-                                                    <tr
-                                                        class="border-b border-white/5"
-                                                    >
-                                                        <td
-                                                            class="py-6 text-white"
-                                                            >M</td
-                                                        >
-                                                        <td
-                                                            class="py-6 text-white/60"
-                                                            >59</td
-                                                        >
-                                                        <td
-                                                            class="py-6 text-white/60"
-                                                            >71</td
-                                                        >
-                                                        <td
-                                                            class="py-6 text-white/60"
-                                                            >65</td
-                                                        >
-                                                    </tr>
-                                                    <tr
-                                                        class="border-b border-white/5"
-                                                    >
-                                                        <td
-                                                            class="py-6 text-white"
-                                                            >L</td
-                                                        >
-                                                        <td
-                                                            class="py-6 text-white/60"
-                                                            >62</td
-                                                        >
-                                                        <td
-                                                            class="py-6 text-white/60"
-                                                            >74</td
-                                                        >
-                                                        <td
-                                                            class="py-6 text-white/60"
-                                                            >67</td
-                                                        >
-                                                    </tr>
-                                                    <tr>
-                                                        <td
-                                                            class="py-6 text-white"
-                                                            >XL</td
-                                                        >
-                                                        <td
-                                                            class="py-6 text-white/60"
-                                                            >65</td
-                                                        >
-                                                        <td
-                                                            class="py-6 text-white/60"
-                                                            >77</td
-                                                        >
-                                                        <td
-                                                            class="py-6 text-white/60"
-                                                            >69</td
-                                                        >
-                                                    </tr>
+                                                <tbody class="text-[11px] tracking-wide">
+                                                    {sizeChart.map((row, i) => (
+                                                        <tr class={i < sizeChart.length - 1 ? "border-b border-white/5" : ""}>
+                                                            <td class="py-6 text-white">{row.size}</td>
+                                                            <td class="py-6 text-cyan-400/80">{row.fit}</td>
+                                                            <td class="py-6 text-white/60">{row.chest}</td>
+                                                            <td class="py-6 text-white/60">{row.length}</td>
+                                                            <td class="py-6 text-white/60">{row.sleeve}</td>
+                                                        </tr>
+                                                    ))}
                                                 </tbody>
                                             </table>
                                         </div>
-
-                                        {/* Fit Guide */}
-                                        <div class="space-y-4 pt-6 border-t border-white/10">
-                                            <h4 class="text-white/70 text-sm tracking-[0.06em] font-light">Fit Guide</h4>
-                                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                                <div class="py-3 px-4 rounded-xl bg-white/5 border border-white/5">
-                                                    <span class="block text-white/40 text-[10px] tracking-[0.06em] mb-1">S</span>
-                                                    <span class="text-white/80 text-xs">Size up</span>
-                                                </div>
-                                                <div class="py-3 px-4 rounded-xl bg-white/5 border border-white/5">
-                                                    <span class="block text-white/40 text-[10px] tracking-[0.06em] mb-1">M</span>
-                                                    <span class="text-white/80 text-xs">Regular</span>
-                                                </div>
-                                                <div class="py-3 px-4 rounded-xl bg-white/5 border border-white/5">
-                                                    <span class="block text-white/40 text-[10px] tracking-[0.06em] mb-1">L</span>
-                                                    <span class="text-white/80 text-xs">Regular</span>
-                                                </div>
-                                                <div class="py-3 px-4 rounded-xl bg-white/5 border border-white/5">
-                                                    <span class="block text-white/40 text-[10px] tracking-[0.06em] mb-1">XL</span>
-                                                    <span class="text-white/80 text-xs">Size down</span>
-                                                </div>
-                                            </div>
-                                            <p class="text-white/40 text-xs leading-relaxed">
-                                                Relaxed, cinematic fit. Between sizes? Size up for an oversized look.
-                                            </p>
-                                        </div>
-
-                                        <p
-                                            class="text-white/30 text-[9px] tracking-wide leading-relaxed  italic"
-                                        >
-                                            * All measurements are taken flat.
-                                            Our pieces are designed for a
-                                            relaxed, cinematic fit.
+                                        <p class="text-white/40 text-xs leading-relaxed">
+                                            Afslappet, filmisk pasform. Mellem størrelser? Vælg større for et oversized look.
+                                        </p>
+                                        <p class="text-white/30 text-[9px] tracking-wide leading-relaxed italic">
+                                            * Alle mål er taget fladt. Vores stykker er designet til en afslappet, filmisk pasform.
                                         </p>
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex gap-3 sm:gap-4 flex-wrap" id="size-buttons-container">
-                                {
-                                    product.variants.length > 0 ? (
-                                        product.variants.map((v) => (
-                                            <button
-                                                type="button"
-                                                class={`size-btn w-12 h-12 min-w-[48px] min-h-[48px] border border-white/10 text-[10px] tracking-wide transition-all duration-500 rounded-xl bg-white/[0.02] touch-manipulation cursor-pointer select-none ${v.availableForSale ? "text-white/40 hover:border-cyan-500/60 hover:text-white active:scale-95" : "text-white/20 opacity-50 line-through"}`}
-                                                data-variant-id={v.id}
-                                                data-variant-title={v.title}
-                                                data-available={String(v.availableForSale)}
-                                                tabindex="0"
-                                            >
-                                                {v.title}
-                                            </button>
-                                        ))
-                                    ) : (
-                                        <p class="text-white/40 text-sm font-light italic">No sizes available</p>
-                                    )
-                                }
+
+                            <div class="flex gap-2.5 sm:gap-4 flex-wrap" id="size-buttons-container">
+                                {(firstColorGroup.variants.length > 0 ? (
+                                    firstColorGroup.variants.map((v) => (
+                                        <button
+                                            type="button"
+                                            class={`size-btn w-12 h-12 min-w-[48px] min-h-[48px] border border-white/10 text-[10px] tracking-wide transition-all duration-500 rounded-xl bg-white/[0.02] touch-manipulation cursor-pointer select-none ${v.availableForSale ? "text-white/40 hover:border-cyan-500/60 hover:text-white active:scale-95" : "text-white/20 opacity-50 line-through"}`}
+                                            data-variant-id={v.id}
+                                            data-variant-title={v.title}
+                                            data-available={String(v.availableForSale)}
+                                            data-quantity-available={v.quantityAvailable ?? ""}
+                                            tabindex="0"
+                                        >
+                                            {v.size ?? v.title}
+                                        </button>
+                                    ))
+                                ) : product.variants.length > 0 ? (
+                                    product.variants.map((v) => (
+                                        <button
+                                            type="button"
+                                            class={`size-btn w-12 h-12 min-w-[48px] min-h-[48px] border border-white/10 text-[10px] tracking-wide transition-all duration-500 rounded-xl bg-white/[0.02] touch-manipulation cursor-pointer select-none ${v.availableForSale ? "text-white/40 hover:border-cyan-500/60 hover:text-white active:scale-95" : "text-white/20 opacity-50 line-through"}`}
+                                            data-variant-id={v.id}
+                                            data-variant-title={v.title}
+                                            data-available={String(v.availableForSale)}
+                                            data-quantity-available={v.quantityAvailable ?? ""}
+                                            tabindex="0"
+                                        >
+                                            {v.size ?? v.title}
+                                        </button>
+                                    ))
+                                ) : (
+                                    <p class="text-white/40 text-sm font-light italic">Ingen størrelser tilgængelige</p>
+                                ))}
                             </div>
                         </div>
 
                         <div class="space-y-4">
                             <button
-                                class="add-to-cart-btn w-full py-5 sm:py-6 min-h-[48px] border border-white/20 rounded-2xl text-white text-sm tracking-[0.04em] font-light relative group overflow-hidden transition-all duration-500 hover:border-cyan-400/40 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-white/20"
+                                class="add-to-cart-btn w-full py-4 sm:py-6 min-h-[48px] border border-white/20 rounded-2xl text-white text-sm tracking-[0.04em] font-light relative group overflow-hidden transition-all duration-500 hover:border-cyan-400/40 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-white/20"
                                 disabled={product.variants.length === 0}
                             >
                                 <div
@@ -411,7 +286,7 @@ const hasVariants = totalVariants > 0;
                                 >
                                 </div>
                                 <span class="relative z-10 font-light"
-                                    >Add to Collection</span
+                                    >Tilføj til kurv</span
                                 >
                                 <div
                                     class="absolute bottom-0 left-0 w-0 h-[1px] bg-cyan-400/60 group-hover:w-full transition-all duration-500"
@@ -421,12 +296,12 @@ const hasVariants = totalVariants > 0;
                             <p
                                 class="text-xs text-white/40 tracking-[0.04em] font-light text-center italic"
                             >
-                                Includes free studio-exclusive packaging
+                                Inkluderer eksklusiv studiopakning
                             </p>
 
                             {/* Trust Bar */}
                             <div
-                                class="pt-6 flex flex-wrap justify-center items-center gap-4 sm:gap-8 opacity-20 group-hover:opacity-40 transition-opacity duration-500"
+                                class="pt-6 flex flex-wrap justify-center items-center gap-4 sm:gap-8 opacity-25 group-hover:opacity-40 transition-opacity duration-500"
                             >
                                 <div class="flex items-center gap-2">
                                     <svg
@@ -441,8 +316,8 @@ const hasVariants = totalVariants > 0;
                                             d="M5 13l4 4L19 7"></path></svg
                                     >
                                     <span
-                                        class="text-[8px] tracking-[0.06em] "
-                                        >Global Priority</span
+                                        class="text-[10px] tracking-[0.06em] "
+                                        >Global prioritering</span
                                     >
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -459,8 +334,8 @@ const hasVariants = totalVariants > 0;
                                         ></path></svg
                                     >
                                     <span
-                                        class="text-[8px] tracking-[0.06em] "
-                                        >Secure Collection</span
+                                        class="text-[10px] tracking-[0.06em] "
+                                        >Sikker betaling</span
                                     >
                                 </div>
                             </div>
@@ -477,7 +352,7 @@ const hasVariants = totalVariants > 0;
                             >
                                 <span
                                     class="text-white/80 text-xs tracking-[0.1em] font-light"
-                                    >Specifications</span
+                                    >Specifikationer</span
                                 >
                                 <span
                                     class="accordion-icon text-white/40 transition-transform duration-300"
@@ -489,30 +364,30 @@ const hasVariants = totalVariants > 0;
                                 <p
                                     class="text-white/60 text-sm leading-relaxed font-light tracking-wide"
                                 >
-                                    Heavy-weight 450GSM cotton. Custom
-                                    silhouette designed in our studio. Features
-                                    high-density screen printing and reinforced
-                                    stitching.
+                                    Tung 450GSM bomuld. Skræddersyet
+                                    silhuet designet i vores studio. Med
+                                    højdensitetsserigrafi og forstærket
+                                    søm.
                                 </p>
                                 <div class="grid grid-cols-2 gap-4 pt-4">
                                     <div>
                                         <span
                                             class="block text-xs text-white/40 tracking-wide mb-1"
-                                            >Fabric</span
+                                            >Stof</span
                                         >
                                         <span
                                             class="text-sm text-white/80 tracking-wide"
-                                            >100% Organic Cotton</span
+                                            >100% økologisk bomuld</span
                                         >
                                     </div>
                                     <div>
                                         <span
                                             class="block text-xs text-white/40 tracking-wide mb-1"
-                                            >Origin</span
+                                            >Oprindelse</span
                                         >
                                         <span
                                             class="text-sm text-white/80 tracking-wide"
-                                            >Made in Portugal</span
+                                            >Fremstillet i Portugal</span
                                         >
                                     </div>
                                 </div>
@@ -529,7 +404,7 @@ const hasVariants = totalVariants > 0;
                             >
                                 <span
                                     class="text-white/80 text-xs tracking-[0.1em] font-light"
-                                    >Shipping & Returns</span
+                                    >Fragt & returnering</span
                                 >
                                 <span
                                     class="accordion-icon text-white/40 transition-transform duration-300"
@@ -541,9 +416,9 @@ const hasVariants = totalVariants > 0;
                                 <p
                                     class="text-white/60 text-sm leading-relaxed font-light tracking-wide"
                                 >
-                                    Global shipping available. Standard delivery
-                                    2-4 business days within EU. 14-day return
-                                    period on all Collection pieces.
+                                    Global fragt tilgængelig. Standard levering
+                                    2-4 hverdage i EU. 14 dages returperiode
+                                    på alle kollektionsstykker.
                                 </p>
                                 </div>
                             </div>
@@ -557,7 +432,7 @@ const hasVariants = totalVariants > 0;
                                 >
                                 <span
                                     class="text-sm text-white/80 tracking-[0.06em]"
-                                    >Live Collection</span
+                                    >Aktiv kollektion</span
                                 >
                             </div>
                             <div class="flex flex-col gap-1">
@@ -567,7 +442,7 @@ const hasVariants = totalVariants > 0;
                                 >
                                 <span
                                     class="text-sm text-white/80 tracking-[0.06em]"
-                                    >Copenhagen</span
+                                    >København</span
                                 >
                             </div>
                         </div>
@@ -578,11 +453,11 @@ const hasVariants = totalVariants > 0;
             {/* Other Pieces Section */}
             {
                 otherProducts.length > 0 && (
-                    <div class="mt-32">
-                        <div class="flex items-center gap-6 mb-16">
+                    <div class="mt-20 sm:mt-32">
+                        <div class="flex items-center gap-6 mb-10 sm:mb-16">
                             <div class="h-[2px] w-10 rounded-full bg-cyan-500/20" />
                             <h2 class="text-white/40 text-sm tracking-[0.08em] font-light">
-                                Continue Exploring
+                                Se flere stykker
                             </h2>
                         </div>
 
@@ -603,12 +478,12 @@ const hasVariants = totalVariants > 0;
                                                 <span class="text-xs text-cyan-400/60 tracking-[0.06em] block mb-2 font-light">
                                                     {p.subName}
                                                 </span>
-                                                <h3 class="text-white text-2xl font-light tracking-wide">
+                                                <h3 class="text-white text-xl sm:text-2xl font-light tracking-wide">
                                                     {p.name}
                                                 </h3>
                                             </div>
                                             <span class="text-white/40 text-sm tracking-wide mb-1 underline underline-offset-8 font-light">
-                                                Explore
+                                                Se mere
                                             </span>
                                         </div>
                                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
@@ -626,92 +501,198 @@ const hasVariants = totalVariants > 0;
 <script>
     import gsap from "gsap";
 
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
     // Initial animation
-    gsap.from(".product-info > *", {
-        y: 30,
-        opacity: 0,
-        duration: 2,
-        stagger: 0.15,
-        ease: "expo.out",
-        delay: 0.3,
-    });
-
-    // Gallery: build ordered image list from thumbnails
-    const mainImg = document.getElementById("main-image") as HTMLImageElement;
-    const thumbnails = document.querySelectorAll(".thumbnail img");
-    const imageUrls = Array.from(thumbnails).map((img) => (img as HTMLImageElement).src);
-    let currentIndex = 0;
-
-    function showImage(index: number) {
-        if (imageUrls.length === 0) return;
-        currentIndex = ((index % imageUrls.length) + imageUrls.length) % imageUrls.length;
-        const newSrc = imageUrls[currentIndex];
-        if (mainImg.src === newSrc) return;
-        gsap.to(mainImg, {
+    if (!reduceMotion) {
+        gsap.from(".product-info > *", {
+            y: 30,
             opacity: 0,
-            scale: 0.98,
-            duration: 0.35,
-            ease: "power2.inOut",
-            onComplete: () => {
-                mainImg.src = newSrc;
-                gsap.to(mainImg, {
-                    opacity: 1,
-                    scale: 1,
-                    duration: 0.5,
-                    ease: "expo.out",
-                });
-            },
+            duration: 2,
+            stagger: 0.15,
+            ease: "expo.out",
+            delay: 0.3,
         });
-        // Sync thumbnail active state
-        thumbnails.forEach((t, i) => {
-            const el = t.closest(".thumbnail");
-            if (el) {
+    }
+
+    // Stock marker: updates when user selects a different size or color
+    function updateStockMarker() {
+        const marker = document.getElementById("stock-marker");
+        const dot = document.getElementById("stock-marker-dot");
+        const text = document.getElementById("stock-marker-text");
+        if (!marker || !dot || !text) return;
+        const selectedBtn = document.querySelector<HTMLButtonElement>(".size-btn[data-selected='true']");
+        if (!selectedBtn) return;
+        const available = selectedBtn.dataset.available === "true";
+        const qty = selectedBtn.dataset.quantityAvailable ? parseInt(selectedBtn.dataset.quantityAvailable, 10) : null;
+        const isLimited = available && qty != null && qty <= 5;
+        text.textContent = available ? (qty != null ? `${qty} tilbage` : "På lager") : "Udsolgt";
+        marker.className = `flex items-center gap-3 py-2 px-4 rounded-full w-fit border ${
+            available ? (isLimited ? "bg-amber-950/20 border-amber-900/20" : "bg-emerald-950/20 border-emerald-900/20") : "bg-red-950/20 border-red-900/20"
+        }`;
+        dot.className = `w-1.5 h-1.5 rounded-full ${
+            available ? (isLimited ? "bg-amber-500" : "bg-emerald-500") : "bg-red-500 animate-pulse"
+        }`;
+        text.className = `text-xs tracking-[0.04em] font-light ${
+            available ? (isLimited ? "text-amber-400" : "text-emerald-400") : "text-red-400"
+        }`;
+    }
+
+    // Gallery: prev/next chevrons and thumbnails; color switch updates images
+    function getImageUrls(): string[] {
+        const mainImg = document.getElementById("main-image") as HTMLImageElement | null;
+        const thumbs = document.querySelectorAll("#gallery-thumbnails .thumbnail-img");
+        if (!mainImg || thumbs.length === 0) return [];
+        return Array.from(thumbs).map((img) => (img as HTMLImageElement).src);
+    }
+
+    function initGallery() {
+        const mainImg = document.getElementById("main-image") as HTMLImageElement | null;
+        const thumbnails = document.querySelectorAll("#gallery-thumbnails .thumbnail");
+        let currentIndex = 0;
+
+        if (!mainImg || thumbnails.length === 0) return;
+
+        function showImage(index: number) {
+            const imageUrls = getImageUrls();
+            if (imageUrls.length === 0) return;
+            currentIndex = ((index % imageUrls.length) + imageUrls.length) % imageUrls.length;
+            const newSrc = imageUrls[currentIndex];
+            if (mainImg.src === newSrc) return;
+            if (reduceMotion) {
+                mainImg.src = newSrc;
+            } else {
+                gsap.to(mainImg, {
+                    opacity: 0,
+                    scale: 0.98,
+                    duration: 0.35,
+                    ease: "power2.inOut",
+                    onComplete: () => {
+                        mainImg.src = newSrc;
+                        gsap.to(mainImg, {
+                            opacity: 1,
+                            scale: 1,
+                            duration: 0.5,
+                            ease: "expo.out",
+                        });
+                    },
+                });
+            }
+            thumbnails.forEach((t, i) => {
+                const el = t as HTMLElement;
                 el.classList.toggle("ring-2", i === currentIndex);
                 el.classList.toggle("ring-cyan-400/60", i === currentIndex);
-            }
+            });
+        }
+
+        thumbnails.forEach((thumb, i) => {
+            (thumb as HTMLElement).addEventListener("click", () => showImage(i));
         });
-    }
 
-    document.querySelector(".gallery-prev")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        showImage(currentIndex - 1);
-    });
-    document.querySelector(".gallery-next")?.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        showImage(currentIndex + 1);
-    });
+        const prevBtn = document.getElementById("gallery-prev-btn");
+        const nextBtn = document.getElementById("gallery-next-btn");
+        prevBtn?.addEventListener("click", (e) => { e.preventDefault(); showImage(currentIndex - 1); });
+        nextBtn?.addEventListener("click", (e) => { e.preventDefault(); showImage(currentIndex + 1); });
 
-    thumbnails.forEach((thumb, i) => {
-        thumb.closest(".thumbnail")?.addEventListener("click", () => {
-            showImage(i);
-        });
-    });
-
-    // Initial thumbnail active state
-    thumbnails.forEach((t, i) => {
-        const el = t.closest(".thumbnail");
-        if (el) {
+        thumbnails.forEach((t, i) => {
+            const el = t as HTMLElement;
             el.classList.toggle("ring-2", i === 0);
             el.classList.toggle("ring-cyan-400/60", i === 0);
-        }
-    });
-
-    // Size button selection - use data-selected for reliable styling (avoids Tailwind class conflicts)
-    const sizeContainer = document.getElementById("size-buttons-container");
-    sizeContainer?.addEventListener("click", (e) => {
-        const btn = (e.target as Element).closest<HTMLButtonElement>(".size-btn");
-        if (!btn) return;
-        document.querySelectorAll(".size-btn").forEach((b) => b.removeAttribute("data-selected"));
-        btn.setAttribute("data-selected", "true");
-    });
-
-    // Default select first available variant on load
-    const firstAvailable = document.querySelector<HTMLButtonElement>(".size-btn[data-available='true']") ?? document.querySelector<HTMLButtonElement>(".size-btn");
-    if (firstAvailable) {
-        firstAvailable.setAttribute("data-selected", "true");
+        });
     }
+
+    // Color selection: update gallery images and size buttons
+    function initColorSwitcher() {
+        const colorBtns = document.querySelectorAll(".color-btn");
+        const mainImg = document.getElementById("main-image") as HTMLImageElement | null;
+        const galleryThumbs = document.getElementById("gallery-thumbnails");
+        const sizeContainer = document.getElementById("size-buttons-container");
+
+        colorBtns.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const el = btn as HTMLButtonElement;
+                const mainImage = el.dataset.mainImage ?? "";
+                const backImage = el.dataset.backImage ?? "";
+                const gallery = JSON.parse(el.dataset.gallery ?? "[]") as string[];
+                const variants = JSON.parse(el.dataset.variants ?? "[]") as { id: string; title: string; size?: string; availableForSale: boolean; quantityAvailable?: number | null }[];
+
+                document.querySelectorAll(".color-btn").forEach((b) => b.removeAttribute("data-selected"));
+                el.setAttribute("data-selected", "true");
+
+                // Update main image and thumbnails
+                if (mainImg) {
+                    if (reduceMotion) {
+                        mainImg.src = mainImage;
+                    } else {
+                        gsap.to(mainImg, { opacity: 0, duration: 0.25, onComplete: () => {
+                            mainImg.src = mainImage;
+                            gsap.to(mainImg, { opacity: 1, duration: 0.4 });
+                        }});
+                    }
+                }
+
+                if (galleryThumbs) {
+                    const thumbImgs = galleryThumbs.querySelectorAll(".thumbnail-img");
+                    const urls = [mainImage, ...gallery, backImage];
+                    thumbImgs.forEach((img, i) => {
+                        const src = urls[i];
+                        if (src && (img as HTMLImageElement).src !== src) (img as HTMLImageElement).src = src;
+                    });
+                }
+
+                // Replace size buttons
+                if (sizeContainer && variants.length > 0) {
+                    sizeContainer.innerHTML = variants.map((v) => `
+                        <button type="button" class="size-btn w-12 h-12 min-w-[48px] min-h-[48px] border border-white/10 text-[10px] tracking-wide transition-all duration-500 rounded-xl bg-white/[0.02] touch-manipulation cursor-pointer select-none ${v.availableForSale ? "text-white/40 hover:border-cyan-500/60 hover:text-white active:scale-95" : "text-white/20 opacity-50 line-through"}"
+                            data-variant-id="${v.id}" data-variant-title="${v.title}" data-available="${v.availableForSale}" data-quantity-available="${v.quantityAvailable ?? ""}">
+                            ${v.size ?? v.title}
+                        </button>
+                    `).join("");
+                    const firstAvail = sizeContainer.querySelector<HTMLButtonElement>(".size-btn[data-available='true']") ?? sizeContainer.querySelector<HTMLButtonElement>(".size-btn");
+                    if (firstAvail) firstAvail.setAttribute("data-selected", "true");
+                    updateStockMarker();
+                }
+            });
+        });
+    }
+    function initSizeSelection() {
+        const sizeContainer = document.getElementById("size-buttons-container");
+        if (!sizeContainer) return;
+
+        // Prevent duplicate listeners when Astro re-runs page scripts on navigation.
+        if (!sizeContainer.hasAttribute("data-size-listener-initialized")) {
+            sizeContainer.addEventListener("click", (e) => {
+                const btn = (e.target as Element).closest<HTMLButtonElement>(".size-btn");
+                if (!btn) return;
+                sizeContainer.querySelectorAll(".size-btn").forEach((b) => b.removeAttribute("data-selected"));
+                btn.setAttribute("data-selected", "true");
+                updateStockMarker();
+            });
+            sizeContainer.setAttribute("data-size-listener-initialized", "true");
+        }
+
+        if (!sizeContainer.querySelector(".size-btn[data-selected='true']")) {
+            const firstAvailable =
+                sizeContainer.querySelector<HTMLButtonElement>(".size-btn[data-available='true']") ??
+                sizeContainer.querySelector<HTMLButtonElement>(".size-btn");
+            if (firstAvailable) {
+                firstAvailable.setAttribute("data-selected", "true");
+            }
+        }
+    }
+
+    function runInit() {
+        initGallery();
+        initColorSwitcher();
+        initSizeSelection();
+        updateStockMarker();
+    }
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", runInit);
+    } else {
+        runInit();
+    }
+    document.addEventListener("astro:page-load", runInit);
 
     // Add to Collection: add variant to Shopify cart
     const addToCartBtn = document.querySelector<HTMLButtonElement>(".add-to-cart-btn");
@@ -730,8 +711,8 @@ const hasVariants = totalVariants > 0;
         }
 
         addToCartBtn.disabled = true;
-        const originalText = addToCartBtn.querySelector("span")?.textContent ?? "Add to Collection";
-        addToCartBtn.querySelector("span")!.textContent = "Adding...";
+        const originalText = addToCartBtn.querySelector("span")?.textContent ?? "Tilføj til kurv";
+        addToCartBtn.querySelector("span")!.textContent = "Tilføjer...";
 
         try {
             const { addVariantToCart } = await import("../../lib/cart-client");
@@ -759,6 +740,12 @@ const hasVariants = totalVariants > 0;
         modal.classList.add("modal-open");
         document.body.style.overflow = "hidden";
         document.body.style.touchAction = "none";
+        if (reduceMotion) {
+            (modalBackdrop as HTMLElement).style.opacity = "1";
+            (modalContent as HTMLElement).style.opacity = "1";
+            (modalContent as HTMLElement).style.transform = "translateY(0)";
+            return;
+        }
         gsap.to(modalBackdrop, { opacity: 1, duration: 0.5 });
         gsap.to(modalContent, {
             opacity: 1,
@@ -770,6 +757,13 @@ const hasVariants = totalVariants > 0;
 
     const hideModal = () => {
         if (!modal || !modalBackdrop || !modalContent) return;
+        if (reduceMotion) {
+            modal.classList.add("invisible", "pointer-events-none");
+            modal.classList.remove("modal-open");
+            document.body.style.overflow = "";
+            document.body.style.touchAction = "";
+            return;
+        }
         gsap.to(modalContent, { opacity: 0, y: 20, duration: 0.5 });
         gsap.to(modalBackdrop, {
             opacity: 0,
@@ -786,6 +780,11 @@ const hasVariants = totalVariants > 0;
     sizeGuideTrigger?.addEventListener("click", openModal);
     closeModal?.addEventListener("click", hideModal);
     modalBackdrop?.addEventListener("click", hideModal);
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal && !modal.classList.contains("invisible")) {
+            hideModal();
+        }
+    });
 
     // Accordion toggle - use event delegation so it works with View Transitions
     document.addEventListener("click", (e) => {
@@ -833,5 +832,22 @@ const hasVariants = totalVariants > 0;
     #size-buttons-container .size-btn[data-selected="true"] {
         border-color: rgb(6 182 212);
         color: rgb(255 255 255);
+    }
+
+    .color-btn[data-selected="true"] {
+        border-color: rgb(6 182 212);
+        color: rgb(255 255 255);
+    }
+
+    /* Size guide modal - ensure proper centering and scroll */
+    #size-guide-modal.modal-open {
+        align-items: center;
+        justify-content: center;
+    }
+
+    @media (hover: none) {
+        #gallery-thumbnails .thumbnail-img {
+            opacity: 0.85;
+        }
     }
 </style>

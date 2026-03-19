@@ -84,7 +84,10 @@ export interface ShopifyProduct {
         id: string;
         title: string;
         availableForSale: boolean;
+        quantityAvailable?: number | null;
         price: { amount: string; currencyCode: string };
+        image?: { url: string; altText?: string };
+        selectedOptions?: { name: string; value: string }[];
       };
     }[];
   };
@@ -134,6 +137,8 @@ const PRODUCTS_QUERY = `
                 title
                 availableForSale
                 price { amount currencyCode }
+                image { url altText }
+                selectedOptions { name value }
               }
             }
           }
@@ -162,6 +167,8 @@ const PRODUCT_BY_HANDLE_QUERY = `
             title
             availableForSale
             price { amount currencyCode }
+            image { url altText }
+            selectedOptions { name value }
           }
         }
       }

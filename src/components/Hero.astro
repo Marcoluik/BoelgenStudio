@@ -3,7 +3,7 @@
 ---
 
 <section
-  class="hero-container fixed inset-0 w-full h-screen z-0 overflow-hidden"
+  class="hero-container fixed inset-0 w-full h-[100svh] z-0 overflow-hidden"
 >
   <div class="absolute inset-0 h-full w-full pointer-events-none">
     <video
@@ -20,7 +20,7 @@
 
     <img
       src="/hero-2-Gv_c13hE.jpeg"
-      alt="Ocean"
+      alt="Hav"
       class="hero-media hidden w-full h-full object-cover"
     />
 
@@ -31,23 +31,23 @@
   </div>
 
   <div
-    class="hero-content relative z-50 flex flex-col items-center justify-center h-full text-center px-4 sm:px-6 pb-[env(safe-area-inset-bottom)]"
+    class="hero-content relative z-50 flex flex-col items-center justify-center h-full text-center px-4 sm:px-6 pb-[max(1rem,env(safe-area-inset-bottom))]"
   >
     <img
       src="/logo-bolgen.svg"
       alt="Bølgen"
-      class="h-24 sm:h-32 md:h-48 mb-6 sm:mb-8 brightness-0 invert drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]"
+      class="h-20 sm:h-32 md:h-48 mb-5 sm:mb-8 brightness-0 invert drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]"
     />
 
     <h1
-      class="text-white text-sm sm:text-lg md:text-2xl font-light tracking-[0.06em] mb-6 sm:mb-12 flex flex-wrap items-center justify-center gap-x-2 sm:gap-x-4 gap-y-1 px-2"
+      class="text-white text-xs sm:text-lg md:text-2xl font-light tracking-[0.06em] mb-6 sm:mb-12 flex flex-wrap items-center justify-center gap-x-2 sm:gap-x-4 gap-y-1 px-2"
     >
-      Sommer <span class="text-white/30">·</span> Dybde <span class="text-white/30">·</span> Kulde
+      Sommer <span class="text-white/30">·</span> Havet <span class="text-white/30">·</span> Venner
     </h1>
 
     <a
       href="#shop"
-      class="group relative px-8 sm:px-12 py-3.5 sm:py-4 overflow-hidden border border-white/20 hover:border-white/50 transition-colors duration-500 rounded-full pointer-events-auto cursor-pointer backdrop-blur-sm touch-manipulation min-h-[44px] flex items-center justify-center"
+      class="group relative w-full max-w-[14rem] px-8 sm:px-12 py-3.5 sm:py-4 overflow-hidden border border-white/20 hover:border-white/50 transition-colors duration-500 rounded-full pointer-events-auto cursor-pointer backdrop-blur-sm touch-manipulation min-h-[44px] flex items-center justify-center"
     >
       <span
         class="relative z-10 text-white text-sm tracking-[0.04em] font-light group-hover:text-cyan-50 transition-colors"
@@ -66,24 +66,29 @@
   import { ScrollTrigger } from "gsap/ScrollTrigger";
   gsap.registerPlugin(ScrollTrigger);
 
-  gsap.to(".hero-media", {
-    scrollTrigger: {
-      trigger: "body",
-      start: "top top",
-      end: "15% top",
-      scrub: true,
-    },
-    filter: "blur(50px)",
-    opacity: 0,
-  });
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!reduceMotion) {
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
 
-  gsap.to(".hero-content", {
-    scrollTrigger: {
-      trigger: "body",
-      start: "top top",
-      end: "12% top",
-      scrub: true,
-    },
-    opacity: 0,
-  });
+    gsap.to(".hero-media", {
+      scrollTrigger: {
+        trigger: "body",
+        start: "top top",
+        end: "15% top",
+        scrub: true,
+      },
+      filter: isMobile ? "blur(12px)" : "blur(50px)",
+      opacity: 0,
+    });
+
+    gsap.to(".hero-content", {
+      scrollTrigger: {
+        trigger: "body",
+        start: "top top",
+        end: "12% top",
+        scrub: true,
+      },
+      opacity: 0,
+    });
+  }
 </script>

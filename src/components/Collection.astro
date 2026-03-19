@@ -13,7 +13,7 @@ const { products } = Astro.props;
 
 <section
   id="shop"
-  class="collection-section relative z-10 pt-28 sm:pt-40 pb-12 sm:pb-24 md:pt-56 md:pb-40 overflow-hidden bg-transparent"
+  class="collection-section relative z-10 pt-20 sm:pt-40 pb-10 sm:pb-24 md:pt-56 md:pb-40 overflow-hidden bg-transparent"
 >
   <div
     class="archive-bg fixed inset-0 pointer-events-none opacity-0 z-0 bg-[#000d12] backdrop-blur-xl"
@@ -34,15 +34,15 @@ const { products } = Astro.props;
 
   <div class="container mx-auto px-4 sm:px-6 relative z-10 max-w-7xl">
     {/* Section Title - Rethought: readable hierarchy, organic feel */}
-    <div class="archive-header mb-10 sm:mb-20 md:mb-40 overflow-hidden">
+    <div class="archive-header mb-8 sm:mb-20 md:mb-40 overflow-hidden">
       <div class="flex flex-col md:flex-row md:items-end md:gap-12 gap-6 sm:gap-8">
         <div class="min-w-0">
           <h2
             class="text-white/90 text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-light tracking-[-0.02em] leading-[1.1]"
           >
-            Collection
+            Kollektion
           </h2>
-          <p class="text-cyan-200/50 text-base md:text-lg mt-4 font-light tracking-[0.02em]">
+          <p class="text-cyan-200/50 text-sm sm:text-base md:text-lg mt-3 sm:mt-4 font-light tracking-[0.02em]">
             Permanent / 01
           </p>
         </div>
@@ -54,64 +54,43 @@ const { products } = Astro.props;
       </div>
     </div>
 
-    <div class="space-y-16 sm:space-y-32 md:space-y-64">
+    <div class="space-y-14 sm:space-y-32 md:space-y-64">
       {
         products.map((product, index) => (
           <div
-            class={`product-row flex flex-col ${index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"} items-center gap-10 sm:gap-16 md:gap-32`}
+            data-product-card
+            class={`product-row flex flex-col ${index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"} items-center gap-8 sm:gap-16 md:gap-32`}
           >
             {/* Main Visual Container */}
-            <div class="w-full md:w-3/5 max-w-2xl mx-auto md:mx-0 relative group collection-card">
+            <div class="w-full md:w-3/5 max-w-2xl mx-auto md:mx-0 relative isolate group">
               <a
+                data-product-card-link
                 href={`/product/${product.handle}`}
-                class="block relative overflow-hidden rounded-2xl bg-[#051117] touch-manipulation active:scale-[0.98] transition-transform"
+                aria-label={`Åbn ${product.name}`}
+                class="block relative z-10 overflow-hidden rounded-2xl bg-[#051117] touch-manipulation active:scale-[0.98] transition-transform min-h-[44px]"
               >
-                <div class="aspect-[4/5] md:aspect-[16/10] overflow-hidden relative">
+                <div class="aspect-[4/5] md:aspect-[16/10] overflow-hidden">
                   {/* Main Image (front) */}
                   <img
                     src={product.mainImage}
                     alt={product.name}
-                    class="collection-front absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-out scale-105 group-hover:scale-110 opacity-100"
+                    class="absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-out scale-105 group-hover:scale-110 opacity-100 group-hover:opacity-0"
                   />
-                  {/* Back Image (Revealed on right-side hover) */}
+                  {/* Back Image (Revealed on hover) */}
                   <img
                     src={product.backImage}
-                    alt={`${product.name} alternate view`}
-                    class="collection-back absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-out scale-110 opacity-0"
+                    alt={`${product.name} bagside`}
+                    class="absolute inset-0 w-full h-full object-cover transition-all duration-500 ease-out scale-110 group-hover:scale-100 opacity-0 group-hover:opacity-100"
                   />
 
                   {/* The Dark Overlay for depth - Cyan Tinted */}
                   <div class="absolute inset-0 bg-gradient-to-t from-[#000d12]/80 via-transparent to-transparent opacity-60" />
                 </div>
-
-                {/* Left zone - shows front: always visible on mobile (no hover), hover-reveal on desktop */}
-                <div class="collection-left absolute left-0 top-0 bottom-0 w-1/2 flex items-center justify-center cursor-pointer z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 touch-manipulation">
-                  <span class="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/30 md:bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm pointer-events-none">
-                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </span>
-                </div>
-                {/* Right zone - shows back */}
-                <div class="collection-right absolute right-0 top-0 bottom-0 w-1/2 flex items-center justify-center cursor-pointer z-20 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 touch-manipulation">
-                  <span class="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-black/30 md:bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-sm pointer-events-none">
-                    <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white/90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7" />
-                    </svg>
-                  </span>
-                </div>
-
-                {/* Hover/tap Interaction Overlay - subtle tint only */}
-                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-all duration-500 bg-[#000d12]/20 pointer-events-none">
-                  <div class="px-10 py-4 border border-cyan-400/25 rounded-full text-white text-sm tracking-[0.06em] font-light bg-[#001c25]/80 backdrop-blur-sm shadow-lg shadow-black/30">
-                    Dive
-                  </div>
-                </div>
               </a>
 
               {/* Floating Index Number - Cinematic Detail */}
               <div
-                class={`absolute top-0 ${index % 2 === 0 ? "left-0 sm:-left-8 md:-left-16" : "right-0 sm:-right-8 md:-right-16"} -translate-y-1/2 overflow-hidden pointer-events-none select-none`}
+                class={`absolute top-0 ${index % 2 === 0 ? "left-0 sm:-left-8 md:-left-16" : "right-0 sm:-right-8 md:-right-16"} -translate-y-1/2 overflow-hidden pointer-events-none select-none z-20`}
               >
                 <span class="text-cyan-100/[0.08] text-5xl sm:text-8xl md:text-9xl font-light tracking-tight">
                   0{index + 1}
@@ -120,7 +99,7 @@ const { products } = Astro.props;
 
               {/* Overlapping Piece Name */}
               <div
-                class={`hidden lg:block absolute bottom-12 ${index % 2 === 0 ? "-right-24" : "-left-24"} mix-blend-screen pointer-events-none transition-transform duration-400 group-hover:translate-y-[-10px]`}
+                class={`hidden lg:block absolute bottom-12 ${index % 2 === 0 ? "-right-24" : "-left-24"} mix-blend-screen pointer-events-none transition-transform duration-400 group-hover:translate-y-[-10px] z-20`}
               >
                 <h3 class="text-cyan-50/70 text-7xl xl:text-8xl font-light tracking-tight leading-none">
                   {product.name.split(" ")[1]}
@@ -129,22 +108,24 @@ const { products } = Astro.props;
             </div>
 
             {/* Product Description Side */}
-            <div class="w-full md:w-2/5 space-y-8 sm:space-y-10 min-w-0">
+              <div class="w-full md:w-2/5 space-y-6 sm:space-y-10 min-w-0 relative z-10">
               <div class="space-y-6">
                 <div class="flex items-center gap-4">
                   <span class="w-6 h-[2px] rounded-full bg-cyan-600/40" />
                   <span class="text-cyan-400/50 text-xs tracking-[0.1em] font-light">
-                    Selection {index + 1}
+                    Udvalg {index + 1}
                   </span>
                 </div>
-                <h4 class="text-white text-2xl sm:text-4xl lg:text-6xl font-light tracking-[0.02em] leading-tight">
-                  {product.subName}
+                <h4 class="text-white text-xl sm:text-4xl lg:text-6xl font-light tracking-[0.02em] leading-tight">
+                  {product.subName || product.name}
                 </h4>
                 <div class="w-12 h-[2px] rounded-full bg-cyan-500/15" />
               </div>
 
-              <p class="text-cyan-100/50 text-base leading-relaxed tracking-wide font-light max-w-sm">
-                {product.description}
+              <p class="text-cyan-100/50 text-sm sm:text-base leading-relaxed tracking-wide font-light max-w-sm">
+                {product.description.length > 120
+                  ? `${product.description.slice(0, 120).trim()}...`
+                  : product.description}
               </p>
 
               <div class="flex items-baseline gap-8">
@@ -153,9 +134,10 @@ const { products } = Astro.props;
                 </span>
                 <a
                   href={`/product/${product.handle}`}
-                  class="group/link flex items-center gap-4 text-cyan-400/40 hover:text-cyan-100 transition-colors duration-300 text-sm tracking-[0.04em] font-light py-2 -my-2 touch-manipulation"
+                  aria-label={`Se detaljer for ${product.name}`}
+                  class="group/link inline-flex items-center gap-4 text-cyan-400/40 hover:text-cyan-100 transition-colors duration-300 text-sm tracking-[0.04em] font-light py-2 px-1 -my-2 touch-manipulation min-h-[44px]"
                 >
-                  Details
+                  Detaljer
                   <div class="w-10 h-[2px] rounded-full bg-cyan-500/10 group-hover/link:bg-cyan-400/50 group-hover/link:w-16 transition-all duration-400" />
                 </a>
               </div>
@@ -165,7 +147,7 @@ const { products } = Astro.props;
       }
     </div>
 
-    <div class="mt-32"></div>
+    <div class="mt-20 sm:mt-32"></div>
   </div>
 </section>
 
@@ -174,83 +156,74 @@ const { products } = Astro.props;
   import { ScrollTrigger } from "gsap/ScrollTrigger";
   gsap.registerPlugin(ScrollTrigger);
 
-  gsap.to(".archive-bg", {
-    scrollTrigger: {
-      trigger: "body",
-      start: "top top",
-      end: "12% top",
-      scrub: true,
-    },
-    opacity: 1,
-  });
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  gsap.from(".archive-header > *", {
-    scrollTrigger: {
-      trigger: ".archive-header",
-      start: "top 90%",
-    },
-    y: 50,
-    opacity: 0,
-    duration: 2,
-    stagger: 0.2,
-    ease: "expo.out",
-  });
-
-  // Mobile: tap left/right to toggle front/back (no hover on touch)
-  document.querySelectorAll(".collection-card").forEach((card) => {
-    const left = card.querySelector(".collection-left");
-    const right = card.querySelector(".collection-right");
-    const front = card.querySelector(".collection-front");
-    const back = card.querySelector(".collection-back");
-    if (!left || !right || !front || !back) return;
-
-    const showFront = () => {
-      (front as HTMLElement).style.opacity = "1";
-      (back as HTMLElement).style.opacity = "0";
-    };
-    const showBack = () => {
-      (front as HTMLElement).style.opacity = "0";
-      (back as HTMLElement).style.opacity = "1";
-    };
-
-    left.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      showFront();
-    });
-    right.addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      showBack();
-    });
-  });
-
-  const rows = document.querySelectorAll(".product-row");
-  rows.forEach((row, i) => {
-    const visual = row.querySelector(".w-full.md\\:w-3\\/5");
-    const content = row.querySelector(".w-full.md\\:w-2\\/5");
-
-    gsap.from(visual, {
+  if (!reduceMotion) {
+    gsap.to(".archive-bg", {
       scrollTrigger: {
-        trigger: row,
-        start: "top 80%",
+        trigger: "body",
+        start: "top top",
+        end: "12% top",
+        scrub: true,
       },
+      opacity: 1,
+    });
+
+    gsap.from(".archive-header > *", {
+      scrollTrigger: {
+        trigger: ".archive-header",
+        start: "top 90%",
+      },
+      y: 50,
       opacity: 0,
-      duration: 2.5,
+      duration: 2,
+      stagger: 0.2,
       ease: "expo.out",
     });
+  } else {
+    gsap.set(".archive-bg", { opacity: 1 });
+  }
 
-    gsap.from(content, {
-      scrollTrigger: {
-        trigger: row,
-        start: "top 70%",
-      },
-      opacity: 0,
-      duration: 2.5,
-      delay: 0.4,
-      ease: "expo.out",
+  // Make the whole product row behave like a card without fighting nested links.
+  document.querySelectorAll("[data-product-card]").forEach((card) => {
+    const link = card.querySelector<HTMLAnchorElement>("[data-product-card-link]");
+    if (!link) return;
+
+    card.addEventListener("click", (event) => {
+      const target = event.target as HTMLElement;
+      if (target.closest("a, button, input, select, textarea")) return;
+      window.location.assign(link.href);
     });
   });
+
+  if (!reduceMotion) {
+    const rows = document.querySelectorAll(".product-row");
+    rows.forEach((row) => {
+      const visual = row.querySelector(".w-full.md\\:w-3\\/5");
+      const content = row.querySelector(".w-full.md\\:w-2\\/5");
+
+      gsap.from(visual, {
+        scrollTrigger: {
+          trigger: row,
+          start: "top 80%",
+        },
+        opacity: 0,
+        duration: 2.5,
+        ease: "expo.out",
+      });
+
+      gsap.from(content, {
+        scrollTrigger: {
+          trigger: row,
+          start: "top 70%",
+        },
+        opacity: 0,
+        duration: 2.5,
+        delay: 0.4,
+        ease: "expo.out",
+      });
+    });
+  }
 </script>
 
 <style>
@@ -258,12 +231,23 @@ const { products } = Astro.props;
     will-change: transform, opacity;
   }
 
-  /* Left zone hover = front, right zone hover = back */
-  .collection-card:has(.collection-right:hover) .collection-front {
-    opacity: 0;
+  @media (max-width: 767px) {
+    .archive-bg {
+      backdrop-filter: none;
+    }
   }
-  .collection-card:has(.collection-right:hover) .collection-back {
-    opacity: 1;
-    transform: scale(1);
+
+  @media (hover: none) {
+    .product-row img {
+      transform: none !important;
+    }
+
+    .product-row img[class*="group-hover:opacity-0"] {
+      opacity: 1 !important;
+    }
+
+    .product-row img[class*="group-hover:opacity-100"] {
+      opacity: 0 !important;
+    }
   }
 </style>

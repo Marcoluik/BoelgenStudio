@@ -3,7 +3,7 @@ import Layout from "../layouts/Layout.astro";
 import Navigation from "../components/Navigation.astro";
 ---
 
-<Layout title="Contact | Bølgen Studio" description="Get in touch with Bølgen Studio. Questions about orders, shipping, or the collection.">
+<Layout title="Kontakt | Bølgen Studio" description="Kontakt Bølgen Studio. Spørgsmål om ordrer, fragt eller kollektionen.">
   <Navigation />
 
   <main class="relative z-10 min-h-screen pt-24 sm:pt-32 pb-24 sm:pb-40">
@@ -17,15 +17,15 @@ import Navigation from "../components/Navigation.astro";
         <svg width="24" height="1" viewBox="0 0 24 1" fill="none" class="w-6 rotate-180 opacity-40 group-hover:opacity-100 transition-all duration-500">
           <line y1="0.5" x2="24" y2="0.5" stroke="currentColor" />
         </svg>
-        Back to Home
+        Tilbage til forsiden
       </a>
 
       <div class="space-y-12">
         <div>
           <span class="w-6 h-[2px] rounded-full bg-cyan-700/50 block mb-6"></span>
-          <h1 class="text-white text-3xl sm:text-4xl lg:text-5xl font-light tracking-[0.02em] mb-4">Contact</h1>
+          <h1 class="text-white text-3xl sm:text-4xl lg:text-5xl font-light tracking-[0.02em] mb-4">Kontakt</h1>
           <p class="text-white/40 text-sm tracking-[0.04em] font-light max-w-md">
-            Questions about orders, shipping, or the collection? We typically respond within 24–48 hours.
+            Spørgsmål om ordrer, fragt eller kollektionen? Vi svarer typisk inden for 24–48 timer.
           </p>
         </div>
 
@@ -38,18 +38,18 @@ import Navigation from "../components/Navigation.astro";
         >
           <input type="hidden" name="form-name" value="contact" />
           <p class="hidden">
-            <label>Don't fill this out: <input name="bot-field" /></label>
+            <label>Udfyld ikke dette: <input name="bot-field" /></label>
           </p>
 
           <div class="space-y-4">
-            <label for="name" class="block text-white/50 text-[10px] tracking-[0.08em] font-light">Name</label>
+            <label for="name" class="block text-white/50 text-[10px] tracking-[0.08em] font-light">Navn</label>
             <input
               type="text"
               id="name"
               name="name"
               required
               class="w-full bg-transparent border-b border-white/10 py-3 text-[16px] text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500/40 transition-colors font-light"
-              placeholder="Your name"
+              placeholder="Dit navn"
             />
           </div>
 
@@ -61,19 +61,19 @@ import Navigation from "../components/Navigation.astro";
               name="email"
               required
               class="w-full bg-transparent border-b border-white/10 py-3 text-[16px] text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500/40 transition-colors font-light"
-              placeholder="your@email.com"
+              placeholder="din@email.dk"
             />
           </div>
 
           <div class="space-y-4">
-            <label for="message" class="block text-white/50 text-[10px] tracking-[0.08em] font-light">Message</label>
+            <label for="message" class="block text-white/50 text-[10px] tracking-[0.08em] font-light">Besked</label>
             <textarea
               id="message"
               name="message"
               required
               rows="5"
               class="w-full bg-transparent border-b border-white/10 py-3 text-[16px] text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500/40 transition-colors font-light resize-none"
-              placeholder="How can we help?"
+              placeholder="Hvordan kan vi hjælpe?"
             ></textarea>
           </div>
 
@@ -87,7 +87,7 @@ import Navigation from "../components/Navigation.astro";
         </form>
 
         <p class="text-white/30 text-xs tracking-[0.04em] font-light">
-          Or reach us on <a href="https://instagram.com/boelgen.studio" target="_blank" rel="noopener noreferrer" class="text-cyan-400/80 hover:text-cyan-400 transition-colors">Instagram</a>.
+          Eller find os på <a href="https://instagram.com/boelgen.studio" target="_blank" rel="noopener noreferrer" class="text-cyan-400/80 hover:text-cyan-400 transition-colors">Instagram</a>.
         </p>
       </div>
     </div>

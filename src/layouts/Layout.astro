@@ -7,12 +7,14 @@ interface Props {
   title: string;
   description?: string;
   image?: string;
+  preloadImage?: string;
 }
 
 const {
   title,
-  description = "Sommer. Venner. Saltvand i håret. Velkommen til Bølgen Studio.",
+  description = "Sommer. Havet. Venner. Velkommen til Bølgen Studio.",
   image = "/hero-2-Gv_c13hE.jpeg",
+  preloadImage,
 } = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
@@ -56,8 +58,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       rel="stylesheet"
     />
 
-    <!-- Performance: Preload critical resources -->
-    <link rel="preload" as="image" href="/hero-2-Gv_c13hE.jpeg" />
+    <!-- Performance: only preload images the current page actually needs -->
+    {preloadImage && <link rel="preload" as="image" href={preloadImage} />}
 
     <!-- Theme color -->
     <meta name="theme-color" content="#08979c" />
@@ -118,6 +120,8 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     overflow-x: hidden;
     overflow-y: auto;
     height: 100%;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
@@ -136,6 +140,7 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     font-weight: 300;
     letter-spacing: 0.02em;
     min-height: 100%;
+    min-height: 100dvh;
     height: auto;
     -webkit-tap-highlight-color: transparent;
   }
@@ -173,5 +178,20 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     outline: 2px solid rgba(56, 189, 248, 0.5);
     outline-offset: 2px;
     border-radius: 4px;
+  }
+
+  /* Respect reduced-motion preferences on mobile and desktop */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 </style>

@@ -14,7 +14,7 @@
 
     <div
         id="cart-panel"
-        class="absolute top-0 right-0 w-full max-w-md h-full translate-x-full transition-transform duration-700 ease-expo pointer-events-auto cart-panel-glass rounded-none sm:rounded-l-2xl overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
+        class="absolute top-0 right-0 w-full max-w-md h-full translate-x-full transition-transform duration-500 ease-expo pointer-events-auto cart-panel-glass rounded-none sm:rounded-l-2xl overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]"
     >
         <div class="absolute inset-0 bg-gradient-to-l from-[#000d12]/95 via-[#000d12]/90 to-[#000d12]/70 backdrop-blur-xl">
         </div>
@@ -42,7 +42,7 @@
                         <span class="w-6 h-[2px] rounded-full bg-cyan-600/40"></span>
                         <span
                             class="text-cyan-500/50 text-xs tracking-[0.08em] font-light"
-                            >Selection</span
+                            >Udvalg</span
                         >
                     </div>
                     <h2 class="text-white text-3xl font-light tracking-[0.04em]">
@@ -52,7 +52,7 @@
                 <button id="close-cart" class="group p-3 -m-2 touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center">
                     <span
                         class="text-white/40 group-hover:text-white transition-colors duration-500 text-sm tracking-wide font-light"
-                        >Close</span
+                        >Luk</span
                     >
                 </button>
             </div>
@@ -61,14 +61,14 @@
                 <div class="w-16 h-[2px] rounded-full bg-white/[0.06]"></div>
                 <div class="space-y-4">
                     <p class="text-white/20 text-sm tracking-[0.04em] font-light">
-                        Bag is currently empty
+                        Kurven er tom
                     </p>
                     <div class="flex justify-center">
                         <a
                             href="/#shop"
                             id="continue-shopping"
-                            class="text-cyan-500/40 hover:text-cyan-400 transition-all duration-500 text-sm tracking-[0.04em] font-light border-b border-cyan-500/10 pb-1 hover:border-cyan-400/30"
-                            >Begin exploring</a
+                            class="text-cyan-500/40 hover:text-cyan-400 transition-all duration-500 text-sm tracking-[0.04em] font-light border-b border-cyan-500/10 pb-1 hover:border-cyan-400/30 min-h-[44px] inline-flex items-center touch-manipulation"
+                            >Se kollektionen</a
                         >
                     </div>
                 </div>
@@ -91,20 +91,20 @@
                     <a
                         id="cart-checkout-btn"
                         href="#"
-                        class="hidden w-full py-6 border border-white/20 rounded-2xl text-white text-sm tracking-[0.04em] font-light relative group overflow-hidden transition-all duration-700 hover:border-cyan-400/40 flex items-center justify-center"
+                        class="hidden w-full py-4 sm:py-6 min-h-[48px] border border-white/20 rounded-2xl text-white text-sm tracking-[0.04em] font-light relative group overflow-hidden transition-all duration-700 hover:border-cyan-400/40 flex items-center justify-center touch-manipulation"
                     >
-                        <span class="relative z-10 font-light">Checkout</span>
+                        <span class="relative z-10 font-light">Til kassen</span>
                         <div class="absolute bottom-0 left-0 w-0 h-[1px] bg-cyan-400/60 group-hover:w-full transition-all duration-700"></div>
                     </a>
                     <button
                         id="cart-checkout-disabled"
                         type="button"
-                        class="w-full py-6 border border-white/10 rounded-2xl text-white/40 text-sm tracking-[0.04em] relative overflow-hidden cursor-not-allowed opacity-60 flex items-center justify-center"
+                        class="w-full py-4 sm:py-6 min-h-[48px] border border-white/10 rounded-2xl text-white/40 text-sm tracking-[0.04em] relative overflow-hidden cursor-not-allowed opacity-60 flex items-center justify-center"
                     >
-                        <span class="relative z-10 font-light italic">Selection required</span>
+                        <span class="relative z-10 font-light italic">Vælg varer</span>
                     </button>
                     <p class="text-xs text-white/20 tracking-[0.04em] font-light text-center">
-                        Shipping and taxes calculated at checkout
+                        Fragt og moms beregnes ved kassen
                     </p>
                 </div>
             </div>
@@ -129,22 +129,35 @@
     const subtotalEl = document.getElementById("cart-subtotal");
     const checkoutBtn = document.getElementById("cart-checkout-btn");
     const checkoutDisabled = document.getElementById("cart-checkout-disabled");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     const openCart = () => {
         if (!drawer || !panel || !backdrop) return;
         drawer.classList.remove("invisible");
         drawer.classList.add("pointer-events-auto");
-        gsap.to(backdrop, { opacity: 1, duration: 1, ease: "power2.out" });
-        gsap.to(panel, { x: 0, duration: 1.4, ease: "expo.out", overwrite: true });
+        if (reduceMotion) {
+            backdrop.style.opacity = "1";
+            panel.style.transform = "translateX(0)";
+        } else {
+            gsap.to(backdrop, { opacity: 1, duration: 0.45, ease: "power2.out" });
+            gsap.to(panel, { x: 0, duration: 0.55, ease: "expo.out", overwrite: true });
+        }
         renderCart();
     };
 
     const closeCart = () => {
         if (!drawer || !panel || !backdrop) return;
-        gsap.to(panel, { x: "100%", duration: 1, ease: "power2.inOut", overwrite: true });
+        if (reduceMotion) {
+            panel.style.transform = "translateX(100%)";
+            backdrop.style.opacity = "0";
+            drawer.classList.add("invisible");
+            drawer.classList.remove("pointer-events-auto");
+            return;
+        }
+        gsap.to(panel, { x: "100%", duration: 0.45, ease: "power2.inOut", overwrite: true });
         gsap.to(backdrop, {
             opacity: 0,
-            duration: 0.8,
+            duration: 0.35,
             onComplete: () => {
                 drawer.classList.add("invisible");
                 drawer.classList.remove("pointer-events-auto");
@@ -173,10 +186,10 @@
                 <p class="text-white text-sm font-light truncate">${line.merchandise.product.title}</p>
                 <p class="text-white/50 text-xs font-light">${line.merchandise.title} · ${line.merchandise.price.amount} ${line.merchandise.price.currencyCode}</p>
                 <div class="flex items-center gap-2 mt-2">
-                    <button type="button" class="cart-line-qty text-white/60 text-xs hover:text-white" data-line-id="${line.id}" data-qty="${line.quantity - 1}">−</button>
+                    <button type="button" class="cart-line-qty text-white/60 text-xs hover:text-white min-h-[36px] min-w-[36px] touch-manipulation" data-line-id="${line.id}" data-qty="${line.quantity - 1}">−</button>
                     <span class="text-white/80 text-xs">${line.quantity}</span>
-                    <button type="button" class="cart-line-qty text-white/60 text-xs hover:text-white" data-line-id="${line.id}" data-qty="${line.quantity + 1}">+</button>
-                    <button type="button" class="cart-line-remove ml-4 text-white/40 text-xs hover:text-red-400" data-line-id="${line.id}">Fjern</button>
+                    <button type="button" class="cart-line-qty text-white/60 text-xs hover:text-white min-h-[36px] min-w-[36px] touch-manipulation" data-line-id="${line.id}" data-qty="${line.quantity + 1}">+</button>
+                    <button type="button" class="cart-line-remove ml-4 text-white/40 text-xs hover:text-red-400 min-h-[36px] touch-manipulation" data-line-id="${line.id}">Fjern</button>
                 </div>
             </div>
         `;

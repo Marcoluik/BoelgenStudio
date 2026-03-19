@@ -1,10 +1,8 @@
 ---
-const images = [
-    "/collectionimg/_DSC8255.jpg",
-    "/collectionimg/_DSC8260.jpg",
-    "/collectionimg/_DSC8261.jpg",
-    "/collectionimg/_DSC8264.jpg",
-];
+import { getAllCollectionImageUrls } from "../lib/collection-images";
+
+const images = await getAllCollectionImageUrls();
+const rollingImages = images.length > 0 ? [...images, ...images] : [];
 ---
 
 <section class="py-12 sm:py-20 md:py-32 bg-transparent relative z-20 overflow-hidden">
@@ -17,22 +15,22 @@ const images = [
                     <span class="w-6 h-[2px] rounded-full bg-cyan-700/40"></span>
                     <span
                         class="text-cyan-500/50 text-xs tracking-[0.08em] font-light"
-                        >Visuals</span
+                        >Billeder</span
                     >
                 </div>
                 <h2
                     class="text-white text-3xl sm:text-4xl md:text-6xl font-light tracking-[0.04em] leading-tight italic"
                 >
-                    Studio <br /> Perspective
+                    Studie <br /> Perspektiv
                 </h2>
             </div>
 
             <a
                 href="https://instagram.com/boelgen.studio"
                 target="_blank"
-                class="group flex items-center gap-4 text-white/30 hover:text-white transition-colors duration-500 text-sm tracking-[0.04em] font-light"
+                class="group flex items-center gap-4 text-white/30 hover:text-white transition-colors duration-500 text-sm tracking-[0.04em] font-light py-2 px-1 -my-2 touch-manipulation min-h-[44px]"
             >
-                Explore Instagram
+                Udforsk Instagram
                 <div
                     class="w-10 h-[2px] rounded-full bg-white/10 group-hover:bg-cyan-400 group-hover:w-16 transition-all duration-700"
                 >
@@ -40,39 +38,72 @@ const images = [
             </a>
         </div>
 
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-            {
-                images.map((img, i) => (
-                    <div
-                        class={`feed-item aspect-square overflow-hidden bg-[#051117] rounded-xl sm:rounded-2xl group relative ${i % 2 === 1 ? "mt-4 sm:mt-8 md:mt-16" : ""}`}
-                    >
-                        <img
-                            src={img}
-                            alt="Studio Perspective"
-                            class="w-full h-full object-cover opacity-40 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500 ease-out grayscale hover:grayscale-0"
-                        />
-                        <div class="absolute inset-0 bg-cyan-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        {
+            rollingImages.length > 0 && (
+                <div class="studio-roll-mask relative overflow-hidden">
+                    <div class="studio-roll-track flex gap-2 sm:gap-3 md:gap-4 w-max">
+                        {rollingImages.map((img, i) => (
+                            <div
+                                class={`feed-item shrink-0 w-[42vw] sm:w-[28vw] lg:w-[18vw] aspect-[4/5] overflow-hidden bg-[#051117] rounded-xl sm:rounded-2xl group relative ${i % 3 === 1 ? "mt-4 sm:mt-8" : i % 3 === 2 ? "mt-8 sm:mt-12" : ""}`}
+                            >
+                                <img
+                                    src={img}
+                                    alt="Studieperspektiv"
+                                    loading="lazy"
+                                    class="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 ease-out grayscale hover:grayscale-0"
+                                />
+                                <div class="absolute inset-0 bg-cyan-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                            </div>
+                        ))}
                     </div>
-                ))
-            }
-        </div>
+                    <div class="pointer-events-none absolute inset-y-0 left-0 w-12 sm:w-20 bg-gradient-to-r from-[#000d12] to-transparent" />
+                    <div class="pointer-events-none absolute inset-y-0 right-0 w-12 sm:w-20 bg-gradient-to-l from-[#000d12] to-transparent" />
+                </div>
+            )
+        }
     </div>
 </section>
 
-<script>
-    import gsap from "gsap";
-    import { ScrollTrigger } from "gsap/ScrollTrigger";
-    gsap.registerPlugin(ScrollTrigger);
+<style>
+    .studio-roll-track {
+        animation: studio-roll 40s linear infinite;
+    }
 
-    gsap.from(".feed-item", {
-        scrollTrigger: {
-            trigger: ".feed-item",
-            start: "top 90%",
-        },
-        y: 60,
-        opacity: 0,
-        duration: 2,
-        stagger: 0.2,
-        ease: "expo.out",
-    });
-</script>
+    .studio-roll-mask:hover .studio-roll-track {
+        animation-play-state: paused;
+    }
+
+    @keyframes studio-roll {
+        from {
+            transform: translateX(0);
+        }
+        to {
+            transform: translateX(-50%);
+        }
+    }
+
+    @media (max-width: 767px) {
+        .studio-roll-mask {
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .studio-roll-track {
+            animation: none;
+            width: auto;
+            padding-bottom: 0.25rem;
+        }
+
+        .feed-item {
+            scroll-snap-align: start;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .studio-roll-track {
+            animation: none;
+        }
+    }
+</style>
