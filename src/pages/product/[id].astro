@@ -486,6 +486,19 @@ const sizeChart = SIZE_CHART_ROWS;
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    function normalizeColorValue(value: string): string {
+        return value
+            .normalize("NFKD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toLowerCase();
+    }
+
+    function syncColorInUrl(color: string) {
+        const url = new URL(window.location.href);
+        url.searchParams.set("color", color);
+        window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    }
+
     // Initial animation
     if (!reduceMotion) {
         gsap.from(".product-info > *", {
@@ -591,52 +604,72 @@ const sizeChart = SIZE_CHART_ROWS;
         const galleryThumbs = document.getElementById("gallery-thumbnails");
         const sizeContainer = document.getElementById("size-buttons-container");
 
-        colorBtns.forEach((btn) => {
-            btn.addEventListener("click", () => {
-                const el = btn as HTMLButtonElement;
-                const mainImage = el.dataset.mainImage ?? "";
-                const backImage = el.dataset.backImage ?? "";
-                const gallery = JSON.parse(el.dataset.gallery ?? "[]") as string[];
-                const variants = JSON.parse(el.dataset.variants ?? "[]") as { id: string; title: string; size?: string; availableForSale: boolean; quantityAvailable?: number | null }[];
+        function selectColor(el: HTMLButtonElement, options?: { syncUrl?: boolean }) {
+            const syncUrl = options?.syncUrl ?? true;
+            const mainImage = el.dataset.mainImage ?? "";
+            const backImage = el.dataset.backImage ?? "";
+            const gallery = JSON.parse(el.dataset.gallery ?? "[]") as string[];
+            const variants = JSON.parse(el.dataset.variants ?? "[]") as { id: string; title: string; size?: string; availableForSale: boolean; quantityAvailable?: number | null }[];
 
-                document.querySelectorAll(".color-btn").forEach((b) => b.removeAttribute("data-selected"));
-                el.setAttribute("data-selected", "true");
+            document.querySelectorAll(".color-btn").forEach((b) => b.removeAttribute("data-selected"));
+            el.setAttribute("data-selected", "true");
 
-                // Update main image and thumbnails
-                if (mainImg) {
-                    if (reduceMotion) {
+            // Update main image and thumbnails
+            if (mainImg) {
+                if (reduceMotion) {
+                    mainImg.src = mainImage;
+                } else {
+                    gsap.to(mainImg, { opacity: 0, duration: 0.25, onComplete: () => {
                         mainImg.src = mainImage;
-                    } else {
-                        gsap.to(mainImg, { opacity: 0, duration: 0.25, onComplete: () => {
-                            mainImg.src = mainImage;
-                            gsap.to(mainImg, { opacity: 1, duration: 0.4 });
-                        }});
-                    }
+                        gsap.to(mainImg, { opacity: 1, duration: 0.4 });
+                    }});
                 }
+            }
 
-                if (galleryThumbs) {
-                    const thumbImgs = galleryThumbs.querySelectorAll(".thumbnail-img");
-                    const urls = [mainImage, ...gallery, backImage];
-                    thumbImgs.forEach((img, i) => {
-                        const src = urls[i];
-                        if (src && (img as HTMLImageElement).src !== src) (img as HTMLImageElement).src = src;
-                    });
-                }
+            if (galleryThumbs) {
+                const thumbImgs = galleryThumbs.querySelectorAll(".thumbnail-img");
+                const urls = [mainImage, ...gallery, backImage];
+                thumbImgs.forEach((img, i) => {
+                    const src = urls[i];
+                    if (src && (img as HTMLImageElement).src !== src) (img as HTMLImageElement).src = src;
+                });
+            }
 
-                // Replace size buttons
-                if (sizeContainer && variants.length > 0) {
-                    sizeContainer.innerHTML = variants.map((v) => `
+            // Replace size buttons
+            if (sizeContainer && variants.length > 0) {
+                sizeContainer.innerHTML = variants.map((v) => `
                         <button type="button" class="size-btn w-12 h-12 min-w-[48px] min-h-[48px] border border-white/10 text-[10px] tracking-wide transition-all duration-500 rounded-xl bg-white/[0.02] touch-manipulation cursor-pointer select-none ${v.availableForSale ? "text-white/40 hover:border-cyan-500/60 hover:text-white active:scale-95" : "text-white/20 opacity-50 line-through"}"
                             data-variant-id="${v.id}" data-variant-title="${v.title}" data-available="${v.availableForSale}" data-quantity-available="${v.quantityAvailable ?? ""}">
                             ${v.size ?? v.title}
                         </button>
                     `).join("");
-                    const firstAvail = sizeContainer.querySelector<HTMLButtonElement>(".size-btn[data-available='true']") ?? sizeContainer.querySelector<HTMLButtonElement>(".size-btn");
-                    if (firstAvail) firstAvail.setAttribute("data-selected", "true");
-                    updateStockMarker();
-                }
+                const firstAvail = sizeContainer.querySelector<HTMLButtonElement>(".size-btn[data-available='true']") ?? sizeContainer.querySelector<HTMLButtonElement>(".size-btn");
+                if (firstAvail) firstAvail.setAttribute("data-selected", "true");
+                updateStockMarker();
+            }
+
+            if (syncUrl) {
+                syncColorInUrl(el.dataset.color ?? "");
+            }
+        }
+
+        colorBtns.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                selectColor(btn as HTMLButtonElement);
             });
         });
+
+        const requestedColor = new URL(window.location.href).searchParams.get("color");
+        if (!requestedColor) return;
+
+        const matchingBtn = Array.from(colorBtns).find((btn) => {
+            const color = (btn as HTMLButtonElement).dataset.color ?? "";
+            return normalizeColorValue(color) === normalizeColorValue(requestedColor);
+        });
+
+        if (matchingBtn) {
+            selectColor(matchingBtn as HTMLButtonElement, { syncUrl: false });
+        }
     }
     function initSizeSelection() {
         const sizeContainer = document.getElementById("size-buttons-container");

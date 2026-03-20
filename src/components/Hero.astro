@@ -2,10 +2,9 @@
 
 ---
 
-<section
-  class="hero-container fixed inset-0 w-full h-[100dvh] min-h-[100svh] z-0 overflow-hidden"
->
-  <div class="hero-visual absolute inset-0 h-full w-full pointer-events-none bg-black">
+<section class="hero-shell relative z-0 overflow-hidden">
+  <div class="hero-container sticky top-0 w-full overflow-hidden">
+    <div class="hero-visual absolute inset-0 h-full w-full pointer-events-none bg-black">
     <video
       autoplay
       muted
@@ -23,36 +22,40 @@
       class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40"
     >
     </div>
-  </div>
+    </div>
 
-  <div
-    class="hero-content relative z-50 flex flex-col items-center justify-center h-full text-center px-4 sm:px-6 pb-[max(1rem,env(safe-area-inset-bottom))]"
-  >
-    <img
-      src="/logo-bolgen.svg"
-      alt="Bølgen"
-      class="h-20 sm:h-32 md:h-48 mb-5 sm:mb-8 brightness-0 invert drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]"
-    />
+    <div class="hero-seam absolute inset-x-0 bottom-0 h-28 sm:h-36 pointer-events-none z-20">
+    </div>
 
-    <h1
-      class="text-white text-xs sm:text-lg md:text-2xl font-light tracking-[0.06em] mb-6 sm:mb-12 flex flex-wrap items-center justify-center gap-x-2 sm:gap-x-4 gap-y-1 px-2"
+    <div
+      class="hero-content relative z-50 flex flex-col items-center justify-center h-full text-center px-4 sm:px-6 pb-[max(1rem,env(safe-area-inset-bottom))]"
     >
-      Sommer <span class="text-white/30">·</span> Havet <span class="text-white/30">·</span> Venner
-    </h1>
+      <img
+        src="/logo-bolgen.svg"
+        alt="Bølgen"
+        class="h-20 sm:h-32 md:h-48 mb-5 sm:mb-8 brightness-0 invert drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]"
+      />
 
-    <a
-      href="#shop"
-      class="group relative w-full max-w-[14rem] px-8 sm:px-12 py-3.5 sm:py-4 overflow-hidden border border-white/20 hover:border-white/50 transition-colors duration-500 rounded-full pointer-events-auto cursor-pointer backdrop-blur-sm touch-manipulation min-h-[44px] flex items-center justify-center"
-    >
-      <span
-        class="relative z-10 text-white text-sm tracking-[0.04em] font-light group-hover:text-cyan-50 transition-colors"
-        >Dyk ned</span
+      <h1
+        class="text-white text-xs sm:text-lg md:text-2xl font-light tracking-[0.06em] mb-6 sm:mb-12 flex flex-wrap items-center justify-center gap-x-2 sm:gap-x-4 gap-y-1 px-2"
       >
-      <div
-        class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"
+        Sommer <span class="text-white/30">·</span> Havet <span class="text-white/30">·</span> Venner
+      </h1>
+
+      <a
+        href="#shop"
+        class="group relative w-full max-w-[14rem] px-8 sm:px-12 py-3.5 sm:py-4 overflow-hidden border border-white/20 hover:border-white/50 transition-colors duration-500 rounded-full pointer-events-auto cursor-pointer backdrop-blur-sm touch-manipulation min-h-[44px] flex items-center justify-center"
       >
-      </div>
-    </a>
+        <span
+          class="relative z-10 text-white text-sm tracking-[0.04em] font-light group-hover:text-cyan-50 transition-colors"
+          >Dyk ned</span
+        >
+        <div
+          class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"
+        >
+        </div>
+      </a>
+    </div>
   </div>
 </section>
 
@@ -79,7 +82,7 @@
     gsap.to(".hero-visual", {
       scrollTrigger: {
         id: "hero-visual-fade",
-        trigger: ".hero-container",
+        trigger: ".hero-shell",
         start: "top top",
         end: "35% top",
         scrub: true,
@@ -93,7 +96,7 @@
     gsap.to(".hero-content", {
       scrollTrigger: {
         id: "hero-content-fade",
-        trigger: ".hero-container",
+        trigger: ".hero-shell",
         start: "top top",
         end: "30% top",
         scrub: true,
@@ -105,6 +108,21 @@
 </script>
 
 <style>
+  .hero-shell,
+  .hero-container {
+    height: 100vh;
+    height: 100svh;
+    min-height: 100svh;
+  }
+
+  @media (min-width: 768px) {
+    .hero-shell,
+    .hero-container {
+      height: 100dvh;
+      min-height: 100dvh;
+    }
+  }
+
   .hero-video {
     opacity: 0;
     transition: opacity 320ms ease;
@@ -115,5 +133,15 @@
 
   .hero-video.is-ready {
     opacity: 1;
+  }
+
+  .hero-seam {
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 13, 18, 0) 0%,
+      rgba(0, 13, 18, 0.28) 38%,
+      rgba(0, 13, 18, 0.72) 72%,
+      rgba(0, 13, 18, 1) 100%
+    );
   }
 </style>

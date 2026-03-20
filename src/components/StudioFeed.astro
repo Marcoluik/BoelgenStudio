@@ -50,14 +50,11 @@ const rollingImages = images.length > 0 ? [...images, ...images] : [];
                                     src={img}
                                     alt="Studieperspektiv"
                                     loading="lazy"
-                                    class="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 ease-out grayscale hover:grayscale-0"
+                                    class="w-full h-full object-cover opacity-100 brightness-110 contrast-105 group-hover:scale-105 transition-transform duration-500 ease-out"
                                 />
-                                <div class="absolute inset-0 bg-cyan-900/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
                             </div>
                         ))}
                     </div>
-                    <div class="pointer-events-none absolute inset-y-0 left-0 w-12 sm:w-20 bg-gradient-to-r from-[#000d12] to-transparent" />
-                    <div class="pointer-events-none absolute inset-y-0 right-0 w-12 sm:w-20 bg-gradient-to-l from-[#000d12] to-transparent" />
                 </div>
             )
         }
