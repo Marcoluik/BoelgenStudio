@@ -88,14 +88,14 @@
                     </span>
                 </div>
                 <div class="space-y-4">
-                    <a
+                    <button
+                        type="button"
                         id="cart-checkout-btn"
-                        href="#"
-                        class="hidden w-full py-4 sm:py-6 min-h-[48px] border border-white/20 rounded-2xl text-white text-sm tracking-[0.04em] font-light relative group overflow-hidden transition-all duration-700 hover:border-cyan-400/40 flex items-center justify-center touch-manipulation"
+                        class="hidden w-full py-4 sm:py-6 min-h-[48px] border border-white/20 rounded-2xl text-white text-sm tracking-[0.04em] font-light relative group overflow-hidden transition-all duration-700 enabled:hover:border-cyan-400/40 flex items-center justify-center touch-manipulation cursor-pointer disabled:cursor-wait disabled:opacity-70"
                     >
-                        <span class="relative z-10 font-light">Til kassen</span>
-                        <div class="absolute bottom-0 left-0 w-0 h-[1px] bg-cyan-400/60 group-hover:w-full transition-all duration-700"></div>
-                    </a>
+                        <span id="cart-checkout-btn-label" class="relative z-10 font-light">Til kassen</span>
+                        <div class="absolute bottom-0 left-0 w-0 h-[1px] bg-cyan-400/60 group-hover:w-full transition-all duration-700 enabled:group-hover:w-full"></div>
+                    </button>
                     <button
                         id="cart-checkout-disabled"
                         type="button"
@@ -128,8 +128,39 @@
     const itemsContainer = document.getElementById("cart-items-container");
     const subtotalEl = document.getElementById("cart-subtotal");
     const checkoutBtn = document.getElementById("cart-checkout-btn");
+    const checkoutBtnLabel = document.getElementById("cart-checkout-btn-label");
     const checkoutDisabled = document.getElementById("cart-checkout-disabled");
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const CHECKOUT_LABEL_DEFAULT = "Til kassen";
+    const CHECKOUT_LABEL_LOADING = "Et øjeblik…";
+
+    function setCheckoutButtonIdle() {
+        if (!checkoutBtn) return;
+        checkoutBtn.disabled = false;
+        checkoutBtn.removeAttribute("aria-busy");
+        if (checkoutBtnLabel) checkoutBtnLabel.textContent = CHECKOUT_LABEL_DEFAULT;
+    }
+
+    async function goToCheckout() {
+        if (!checkoutBtn || checkoutBtn.disabled || checkoutBtn.getAttribute("aria-busy") === "true") return;
+        checkoutBtn.setAttribute("aria-busy", "true");
+        checkoutBtn.disabled = true;
+        if (checkoutBtnLabel) checkoutBtnLabel.textContent = CHECKOUT_LABEL_LOADING;
+        try {
+            const cart = await getCart();
+            let url = cart?.checkoutUrl?.trim() ?? "";
+            if (url.startsWith("//")) url = `${window.location.protocol}${url}`;
+            if (url.startsWith("http")) {
+                window.location.assign(url);
+                return;
+            }
+            setCheckoutButtonIdle();
+            await renderCart();
+        } catch {
+            setCheckoutButtonIdle();
+            await renderCart();
+        }
+    }
 
     const openCart = () => {
         if (!drawer || !panel || !backdrop) return;
@@ -212,7 +243,10 @@
 
         if (lines.length === 0) {
             if (subtotalEl) subtotalEl.textContent = "0.00 DKK";
-            if (checkoutBtn) checkoutBtn.classList.add("hidden");
+            if (checkoutBtn) {
+                checkoutBtn.classList.add("hidden");
+                setCheckoutButtonIdle();
+            }
             if (checkoutDisabled) checkoutDisabled.classList.remove("hidden");
             dispatchCartUpdated(0);
             return;
@@ -228,7 +262,7 @@
             subtotalEl.textContent = `${parseFloat(subtotal.amount).toFixed(2)} ${subtotal.currencyCode}`;
         }
         if (checkoutBtn) {
-            checkoutBtn.href = cart?.checkoutUrl ?? "#";
+            setCheckoutButtonIdle();
             checkoutBtn.classList.remove("hidden");
         }
         if (checkoutDisabled) checkoutDisabled.classList.add("hidden");
@@ -275,6 +309,9 @@
     }
 
     cartBtn?.addEventListener("click", openCart);
+    checkoutBtn?.addEventListener("click", () => {
+        void goToCheckout();
+    });
     closeBtn?.addEventListener("click", closeCart);
     backdrop?.addEventListener("click", closeCart);
     continueBtn?.addEventListener("click", closeCart);
