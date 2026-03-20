@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import Navigation from "../../components/Navigation.astro";
 import { getProductsAtBuild } from "../../lib/fetch-products";
+import { SIZE_CHART_ROWS } from "../../lib/size-chart";
 
 export async function getStaticPaths() {
     const products = await getProductsAtBuild();
@@ -36,11 +37,12 @@ const stockMarkerTextClass = stockMarkerAvailable ? (stockMarkerLimited ? "text-
 const stockMarkerLabel = stockMarkerAvailable ? (stockMarkerQty != null ? stockMarkerQty + " tilbage" : "På lager") : "Udsolgt";
 const pageTitle = displaySubName ? product.name + " | " + displaySubName : product.name;
 
-const sizeChart = [
-    { size: "S", length: "66 cm", chest: "59 cm", sleeve: "61 cm" },
-    { size: "M", length: "71 cm", chest: "63 cm", sleeve: "63 cm" },
-    { size: "L", length: "74 cm", chest: "66 cm", sleeve: "64 cm" },
-];
+const DESCRIPTION_PREVIEW_LEN = 150;
+const descriptionFull = product.description;
+const descriptionIsLong = descriptionFull.length > DESCRIPTION_PREVIEW_LEN;
+const descriptionPreview = descriptionIsLong ? descriptionFull.slice(0, DESCRIPTION_PREVIEW_LEN).trim() : descriptionFull;
+
+const sizeChart = SIZE_CHART_ROWS;
 ---
 
 <Layout title={pageTitle}>
@@ -154,9 +156,25 @@ const sizeChart = [
                     </div>
 
                     <div class="space-y-6">
-                        <p class="text-white/80 text-base leading-relaxed font-light tracking-wide max-w-md">
-                            {product.description.length > 150 ? product.description.slice(0, 150).trim() + "..." : product.description}
-                        </p>
+                        <div class="max-w-md">
+                            <div class="text-white/80 text-base leading-relaxed font-light tracking-wide">
+                                <span id="product-description-text">{descriptionIsLong ? descriptionPreview : descriptionFull}</span>
+                                {descriptionIsLong && (
+                                    <button
+                                        type="button"
+                                        id="product-description-toggle"
+                                        class="description-expand-btn inline p-0 ml-0.5 border-0 bg-transparent text-cyan-400/70 hover:text-cyan-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40 rounded-sm font-light tracking-wide align-baseline cursor-pointer touch-manipulation min-h-[44px] px-1 -my-2 py-2"
+                                        aria-expanded="false"
+                                        aria-controls="product-description-text"
+                                    >
+                                        …
+                                    </button>
+                                )}
+                            </div>
+                            {descriptionIsLong && (
+                                <template id="product-description-full">{descriptionFull}</template>
+                            )}
+                        </div>
                         <p
                             class="text-white text-3xl font-light tracking-wide mt-8"
                         >
@@ -192,40 +210,14 @@ const sizeChart = [
                         <div class="space-y-4">
                             <div class="flex justify-between items-end max-w-xs">
                                 <span class="text-white/50 text-[10px] tracking-[0.08em] block font-light">Vælg størrelse</span>
-                                <button class="size-guide-trigger text-cyan-400/60 hover:text-cyan-400 text-sm tracking-[0.04em] font-light transition-colors border-b border-cyan-500/20 min-h-[44px] touch-manipulation">Størrelsesguide</button>
-                            </div>
-
-                            {/* Size Guide Modal */}
-                            <div id="size-guide-modal" class="fixed inset-0 z-[110] flex items-center justify-center p-4 invisible pointer-events-none">
-                                <div class="absolute inset-0 bg-black/25 opacity-0 transition-opacity duration-200 modal-backdrop"></div>
-                                <div class="relative w-full max-w-lg rounded-lg bg-[#07151b] opacity-0 translate-y-2 transition-all duration-200 modal-content">
-                                    <div class="flex items-center justify-between px-4 sm:px-6 py-4">
-                                        <h3 class="text-white text-base sm:text-lg font-light tracking-[0.04em]">Størrelsesguide</h3>
-                                        <button class="close-modal text-white/45 hover:text-white transition-colors text-sm tracking-[0.04em] min-h-[44px] px-2">Luk</button>
-                                    </div>
-                                    <div class="px-4 sm:px-6 py-4">
-                                        <table class="w-full text-left border-collapse text-[12px]">
-                                            <thead>
-                                                <tr class="border-b border-white/10">
-                                                    <th class="py-3 pr-4 text-white/45 text-[10px] tracking-[0.08em] font-light">Størrelse</th>
-                                                    <th class="py-3 pr-4 text-white/45 text-[10px] tracking-[0.08em] font-light">Længde</th>
-                                                    <th class="py-3 pr-4 text-white/45 text-[10px] tracking-[0.08em] font-light">Bryst</th>
-                                                    <th class="py-3 text-white/45 text-[10px] tracking-[0.08em] font-light">Ærme</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {sizeChart.map((row, i) => (
-                                                    <tr class={i < sizeChart.length - 1 ? "border-b border-white/5" : ""}>
-                                                        <td class="py-3 pr-4 text-white">{row.size}</td>
-                                                        <td class="py-3 pr-4 text-white/60 whitespace-nowrap">{row.length}</td>
-                                                        <td class="py-3 pr-4 text-white/60 whitespace-nowrap">{row.chest}</td>
-                                                        <td class="py-3 text-white/60 whitespace-nowrap">{row.sleeve}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
+                                <button
+                                    type="button"
+                                    class="size-guide-trigger text-cyan-400/60 hover:text-cyan-400 text-sm tracking-[0.04em] font-light transition-colors border-b border-cyan-500/20 min-h-[44px] touch-manipulation"
+                                    aria-haspopup="dialog"
+                                    aria-controls="size-guide-dialog"
+                                >
+                                    Størrelsesguide
+                                </button>
                             </div>
 
                             <div class="flex gap-2.5 sm:gap-4 flex-wrap" id="size-buttons-container">
@@ -351,10 +343,9 @@ const sizeChart = [
                                 <p
                                     class="text-white/60 text-sm leading-relaxed font-light tracking-wide"
                                 >
-                                    Tung 450GSM bomuld. Skræddersyet
+                                    Tung bomuld. Skræddersyet
                                     silhuet designet i vores studio. Med
-                                    højdensitetsserigrafi og forstærket
-                                    søm.
+                                    broderet kaligrafi.
                                 </p>
                                 <div class="grid grid-cols-2 gap-4 pt-4">
                                     <div>
@@ -364,19 +355,10 @@ const sizeChart = [
                                         >
                                         <span
                                             class="text-sm text-white/80 tracking-wide"
-                                            >100% økologisk bomuld</span
+                                            >100% bomuld</span
                                         >
                                     </div>
-                                    <div>
-                                        <span
-                                            class="block text-xs text-white/40 tracking-wide mb-1"
-                                            >Oprindelse</span
-                                        >
-                                        <span
-                                            class="text-sm text-white/80 tracking-wide"
-                                            >Fremstillet i Portugal</span
-                                        >
-                                    </div>
+                                    
                                 </div>
                                 </div>
                             </div>
@@ -403,36 +385,14 @@ const sizeChart = [
                                 <p
                                     class="text-white/60 text-sm leading-relaxed font-light tracking-wide"
                                 >
-                                    Global fragt tilgængelig. Standard levering
-                                    2-4 hverdage i EU. 14 dages returperiode
-                                    på alle kollektionsstykker.
+                                    Levering tager typisk 2-4 hverdage. 14
+                                    dages returret.
                                 </p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="pt-8 border-t border-white/15 flex gap-8">
-                            <div class="flex flex-col gap-1">
-                                <span
-                                    class="text-xs text-cyan-500/60 tracking-[0.08em]"
-                                    >Status</span
-                                >
-                                <span
-                                    class="text-sm text-white/80 tracking-[0.06em]"
-                                    >Aktiv kollektion</span
-                                >
-                            </div>
-                            <div class="flex flex-col gap-1">
-                                <span
-                                    class="text-xs text-cyan-500/60 tracking-[0.08em]"
-                                    >Studio</span
-                                >
-                                <span
-                                    class="text-sm text-white/80 tracking-[0.06em]"
-                                    >København</span
-                                >
-                            </div>
-                        </div>
+                        
                     </div>
                 </div>
             </div>
@@ -482,6 +442,42 @@ const sizeChart = [
                 )
             }
         </div>
+
+        <dialog id="size-guide-dialog" class="size-guide-dialog">
+            <div class="flex max-h-[min(85dvh,28rem)] flex-col">
+                <div class="flex shrink-0 items-center justify-between gap-4 border-b border-white/10 px-4 py-3 sm:px-5">
+                    <h2 class="text-base font-light tracking-[0.04em] text-white">Størrelsesguide</h2>
+                    <button
+                        type="button"
+                        class="size-guide-close text-white/50 hover:text-white text-sm tracking-[0.04em] font-light min-h-[44px] min-w-[44px] px-2 touch-manipulation"
+                    >
+                        Luk
+                    </button>
+                </div>
+                <div class="overflow-x-auto overflow-y-auto px-4 py-4 sm:px-5">
+                    <table class="w-full min-w-[280px] text-left border-collapse text-[12px]">
+                        <thead>
+                            <tr class="border-b border-white/10">
+                                <th class="py-2.5 pr-3 text-white/45 text-[10px] tracking-[0.08em] font-light">Størrelse</th>
+                                <th class="py-2.5 pr-3 text-white/45 text-[10px] tracking-[0.08em] font-light">Længde</th>
+                                <th class="py-2.5 pr-3 text-white/45 text-[10px] tracking-[0.08em] font-light">Bryst</th>
+                                <th class="py-2.5 text-white/45 text-[10px] tracking-[0.08em] font-light">Ærme</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {sizeChart.map((row, i) => (
+                                <tr class={i < sizeChart.length - 1 ? "border-b border-white/5" : ""}>
+                                    <td class="py-2.5 pr-3 text-white">{row.size}</td>
+                                    <td class="py-2.5 pr-3 text-white/60 whitespace-nowrap">{row.length}</td>
+                                    <td class="py-2.5 pr-3 text-white/60 whitespace-nowrap">{row.chest}</td>
+                                    <td class="py-2.5 text-white/60 whitespace-nowrap">{row.sleeve}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </dialog>
     </main>
 </Layout>
 
@@ -668,10 +664,35 @@ const sizeChart = [
         }
     }
 
+    function initDescriptionToggle() {
+        const textSpan = document.getElementById("product-description-text");
+        const btn = document.getElementById("product-description-toggle") as HTMLButtonElement | null;
+        const tmpl = document.getElementById("product-description-full") as HTMLTemplateElement | null;
+        if (!textSpan || !btn || !tmpl || btn.dataset.descToggleInit === "true") return;
+        btn.dataset.descToggleInit = "true";
+        // <template> contents live in .content; tmpl.textContent is empty in browsers.
+        const fullText = (tmpl.content.textContent ?? "").trim();
+        const previewText = (textSpan.textContent ?? "").trim();
+        let expanded = false;
+        btn.addEventListener("click", () => {
+            expanded = !expanded;
+            textSpan.textContent = expanded ? fullText : previewText;
+            btn.textContent = expanded ? "Vis mindre" : "…";
+            btn.setAttribute("aria-expanded", expanded ? "true" : "false");
+            btn.classList.toggle("inline", !expanded);
+            btn.classList.toggle("ml-0.5", !expanded);
+            btn.classList.toggle("align-baseline", !expanded);
+            btn.classList.toggle("block", expanded);
+            btn.classList.toggle("mt-2", expanded);
+            btn.classList.toggle("text-left", expanded);
+        });
+    }
+
     function runInit() {
         initGallery();
         initColorSwitcher();
         initSizeSelection();
+        initDescriptionToggle();
         updateStockMarker();
     }
     if (document.readyState === "loading") {
@@ -714,63 +735,15 @@ const sizeChart = [
         }
     });
 
-    // Size Guide Modal Logic
+    // Size guide: native <dialog> (top layer; Escape + scroll lock without body hacks)
+    const sizeGuideDialog = document.getElementById("size-guide-dialog") as HTMLDialogElement | null;
     const sizeGuideTrigger = document.querySelector(".size-guide-trigger");
-    const modal = document.getElementById("size-guide-modal");
-    const modalBackdrop = modal?.querySelector(".modal-backdrop");
-    const modalContent = modal?.querySelector(".modal-content");
-    const closeModal = modal?.querySelector(".close-modal");
+    const sizeGuideClose = sizeGuideDialog?.querySelector(".size-guide-close");
 
-    const openModal = () => {
-        if (!modal || !modalBackdrop || !modalContent) return;
-        modal.classList.remove("invisible", "pointer-events-none");
-        modal.classList.add("modal-open");
-        document.body.style.overflow = "hidden";
-        document.body.style.touchAction = "none";
-        if (reduceMotion) {
-            (modalBackdrop as HTMLElement).style.opacity = "1";
-            (modalContent as HTMLElement).style.opacity = "1";
-            (modalContent as HTMLElement).style.transform = "translateY(0)";
-            return;
-        }
-        gsap.to(modalBackdrop, { opacity: 1, duration: 0.2 });
-        gsap.to(modalContent, {
-            opacity: 1,
-            y: 0,
-            duration: 0.22,
-            ease: "power2.out",
-        });
-    };
-
-    const hideModal = () => {
-        if (!modal || !modalBackdrop || !modalContent) return;
-        if (reduceMotion) {
-            modal.classList.add("invisible", "pointer-events-none");
-            modal.classList.remove("modal-open");
-            document.body.style.overflow = "";
-            document.body.style.touchAction = "";
-            return;
-        }
-        gsap.to(modalContent, { opacity: 0, y: 8, duration: 0.18 });
-        gsap.to(modalBackdrop, {
-            opacity: 0,
-            duration: 0.18,
-            onComplete: () => {
-                modal.classList.add("invisible", "pointer-events-none");
-                modal.classList.remove("modal-open");
-                document.body.style.overflow = "";
-                document.body.style.touchAction = "";
-            },
-        });
-    };
-
-    sizeGuideTrigger?.addEventListener("click", openModal);
-    closeModal?.addEventListener("click", hideModal);
-    modalBackdrop?.addEventListener("click", hideModal);
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && modal && !modal.classList.contains("invisible")) {
-            hideModal();
-        }
+    sizeGuideTrigger?.addEventListener("click", () => sizeGuideDialog?.showModal());
+    sizeGuideClose?.addEventListener("click", () => sizeGuideDialog?.close());
+    sizeGuideDialog?.addEventListener("click", (e) => {
+        if (e.target === sizeGuideDialog) sizeGuideDialog.close();
     });
 
     // Accordion toggle - use event delegation so it works with View Transitions
@@ -826,10 +799,19 @@ const sizeChart = [
         color: rgb(255 255 255);
     }
 
-    /* Size guide modal - ensure proper centering and scroll */
-    #size-guide-modal.modal-open {
-        align-items: center;
-        justify-content: center;
+    .size-guide-dialog {
+        margin: auto;
+        padding: 0;
+        border: 1px solid rgb(255 255 255 / 0.1);
+        border-radius: 0.75rem;
+        background: #07151b;
+        color: #fff;
+        max-width: min(36rem, calc(100vw - 2rem));
+        width: 100%;
+    }
+
+    .size-guide-dialog::backdrop {
+        background: rgb(0 0 0 / 0.55);
     }
 
     @media (hover: none) {

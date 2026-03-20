@@ -1,6 +1,12 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Navigation from "../components/Navigation.astro";
+
+const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL?.trim();
+const useFormSubmit = Boolean(contactEmail);
+const siteBase = import.meta.env.SITE?.replace(/\/$/, "") ?? "";
+const formAction = useFormSubmit ? `https://formsubmit.co/${encodeURIComponent(contactEmail)}` : undefined;
+const redirectAfterSubmit = useFormSubmit && siteBase ? `${siteBase}/contact?success=1` : "";
 ---
 
 <Layout title="Kontakt | Bølgen Studio" description="Kontakt Bølgen Studio. Spørgsmål om ordrer, fragt eller kollektionen.">
@@ -29,17 +35,46 @@ import Navigation from "../components/Navigation.astro";
           </p>
         </div>
 
-        <form
-          class="space-y-8"
-          name="contact"
-          method="POST"
-          data-netlify="true"
-          netlify-honeypot="bot-field"
+        <div
+          id="contact-thanks"
+          class="hidden space-y-8 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 px-6 py-10 sm:px-8 sm:py-12"
         >
-          <input type="hidden" name="form-name" value="contact" />
-          <p class="hidden">
-            <label>Udfyld ikke dette: <input name="bot-field" /></label>
+          <p class="text-white/90 text-sm tracking-[0.04em] font-light leading-relaxed">
+            Tak — vi har modtaget din besked og vender tilbage hurtigst muligt.
           </p>
+          <a
+            href="/contact"
+            class="inline-flex text-cyan-400/80 hover:text-cyan-400 text-sm tracking-[0.04em] font-light transition-colors"
+          >
+            Send en ny besked
+          </a>
+        </div>
+
+        <form
+          id="contact-form"
+          class="space-y-8"
+          method="POST"
+          {...(useFormSubmit
+            ? { action: formAction }
+            : {
+                name: "contact",
+                "data-netlify": "true",
+                "netlify-honeypot": "bot-field",
+              })}
+        >
+          {useFormSubmit ? (
+            <>
+              <input type="hidden" name="_subject" value="Kontakt — Bølgen Studio" />
+              {redirectAfterSubmit ? <input type="hidden" name="_next" value={redirectAfterSubmit} /> : null}
+            </>
+          ) : (
+            <>
+              <input type="hidden" name="form-name" value="contact" />
+              <p class="hidden">
+                <label>Udfyld ikke dette: <input name="bot-field" /></label>
+              </p>
+            </>
+          )}
 
           <div class="space-y-4">
             <label for="name" class="block text-white/50 text-[10px] tracking-[0.08em] font-light">Navn</label>
@@ -92,4 +127,18 @@ import Navigation from "../components/Navigation.astro";
       </div>
     </div>
   </main>
+
+  <script is:inline>
+    (function () {
+      try {
+        if (new URLSearchParams(window.location.search).get("success") === "1") {
+          var thanks = document.getElementById("contact-thanks");
+          var form = document.getElementById("contact-form");
+          if (thanks) thanks.classList.remove("hidden");
+          if (form) form.classList.add("hidden");
+          window.history.replaceState({}, "", window.location.pathname);
+        }
+      } catch (_) {}
+    })();
+  </script>
 </Layout>

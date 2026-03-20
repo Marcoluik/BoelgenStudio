@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import Navigation from "../components/Navigation.astro";
+import { SIZE_CHART_ROWS } from "../lib/size-chart";
 ---
 
 <Layout title="Fragt & returnering | Bølgen Studio" description="Bølgen Studio fragt- og returpolitik.">
@@ -30,32 +31,36 @@ import Navigation from "../components/Navigation.astro";
         <div class="space-y-8 text-white/70 text-sm leading-relaxed font-light tracking-wide">
           <section>
             <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">Fragt</h2>
-            <p>Vi sender til hele verden. Standard levering i EU er typisk 2–4 hverdage. International fragttid varierer. Fragtomkostninger beregnes ved kassen.</p>
+            <p>Levering i Danmark tager typisk 2-4 hverdage. Fragtomkostninger beregnes ved kassen.</p>
           </section>
 
           <section>
             <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">Returnering</h2>
-            <p>Du har 14 dage fra modtagelse til at returnere ubrugte, uvaskede varer i original emballage. Start en returnering ved at kontakte os. Vi behandler refusioner inden for 14 dage efter modtagelse.</p>
+            <p>Du har 14 dage fra modtagelse til at returnere ubrugte, uvaskede varer i original emballage. Start en returnering ved at kontakte os på mail. Vi behandler refusioner inden for 14 dage efter modtagelse.</p>
           </section>
 
           <section id="size-guide">
             <h2 class="text-white/90 text-lg font-light mb-4 tracking-[0.04em]">Størrelsesguide</h2>
-            <p>Alle mål er taget fladt. Vores stykker er designet til en afslappet, filmisk pasform.</p>
+            <p>Alle mål er taget fladt. Vores tøj er lavet til at sidden smulle cropped.</p>
             <div class="overflow-x-auto mt-6">
               <table class="w-full text-left border-collapse border border-white/10 rounded-lg overflow-hidden">
                 <thead>
                   <tr class="border-b border-white/10">
                     <th class="py-4 px-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Størrelse</th>
-                    <th class="py-4 px-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Bryst (cm)</th>
-                    <th class="py-4 px-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Længde (cm)</th>
-                    <th class="py-4 px-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Ærme (cm)</th>
+                    <th class="py-4 px-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Længde</th>
+                    <th class="py-4 px-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Bryst</th>
+                    <th class="py-4 px-4 text-white/40 text-[10px] tracking-[0.06em] font-light">Ærme</th>
                   </tr>
                 </thead>
                 <tbody class="text-[11px] tracking-wide">
-                  <tr class="border-b border-white/5"><td class="py-6 px-4 text-white">S</td><td class="py-6 px-4 text-white/60">56</td><td class="py-6 px-4 text-white/60">68</td><td class="py-6 px-4 text-white/60">63</td></tr>
-                  <tr class="border-b border-white/5"><td class="py-6 px-4 text-white">M</td><td class="py-6 px-4 text-white/60">59</td><td class="py-6 px-4 text-white/60">71</td><td class="py-6 px-4 text-white/60">65</td></tr>
-                  <tr class="border-b border-white/5"><td class="py-6 px-4 text-white">L</td><td class="py-6 px-4 text-white/60">62</td><td class="py-6 px-4 text-white/60">74</td><td class="py-6 px-4 text-white/60">67</td></tr>
-                  <tr><td class="py-6 px-4 text-white">XL</td><td class="py-6 px-4 text-white/60">65</td><td class="py-6 px-4 text-white/60">77</td><td class="py-6 px-4 text-white/60">69</td></tr>
+                  {SIZE_CHART_ROWS.map((row, i) => (
+                    <tr class={i < SIZE_CHART_ROWS.length - 1 ? "border-b border-white/5" : ""}>
+                      <td class="py-6 px-4 text-white">{row.size}</td>
+                      <td class="py-6 px-4 text-white/60 whitespace-nowrap">{row.length}</td>
+                      <td class="py-6 px-4 text-white/60 whitespace-nowrap">{row.chest}</td>
+                      <td class="py-6 px-4 text-white/60 whitespace-nowrap">{row.sleeve}</td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>

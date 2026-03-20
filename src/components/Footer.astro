@@ -1,5 +1,9 @@
 ---
-
+const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL?.trim();
+const useFormSubmit = Boolean(contactEmail);
+const siteBase = import.meta.env.SITE?.replace(/\/$/, "") ?? "";
+const newsletterAction = useFormSubmit ? `https://formsubmit.co/${encodeURIComponent(contactEmail)}` : undefined;
+const newsletterNext = useFormSubmit && siteBase ? `${siteBase}/` : "";
 ---
 
 <footer class="relative z-10 bg-[#000d12] pt-16 sm:pt-32 pb-[max(3rem,calc(1rem+env(safe-area-inset-bottom)))] border-t border-white/5 rounded-t-3xl">
@@ -59,18 +63,12 @@
                             >Alle stykker</a
                         >
                     </li>
+                    
                     <li>
                         <a
                             href="#"
                             class="text-white/30 hover:text-white transition-colors text-sm tracking-[0.04em] font-light min-h-[44px] inline-flex items-center touch-manipulation"
-                            >Begrænsede udgivelser</a
-                        >
-                    </li>
-                    <li>
-                        <a
-                            href="#"
-                            class="text-white/30 hover:text-white transition-colors text-sm tracking-[0.04em] font-light min-h-[44px] inline-flex items-center touch-manipulation"
-                            >Studieessentials</a
+                            >Sommer essentials</a
                         >
                     </li>
                 </ul>
@@ -118,20 +116,33 @@
                 <p
                     class="text-white/30 text-sm tracking-[0.04em] leading-relaxed font-light"
                 >
-                    Tilmeld dig studiet for tidlig adgang til fremtidige
+                    Tilmeld dig Bølgen for tidlig adgang til fremtidige
                     kollektioner.
                 </p>
                 <form
                     name="newsletter"
                     method="POST"
-                    data-netlify="true"
-                    netlify-honeypot="newsletter-bot"
+                    {...(useFormSubmit
+                        ? { action: newsletterAction }
+                        : {
+                              "data-netlify": "true",
+                              "netlify-honeypot": "newsletter-bot",
+                          })}
                     class="relative group"
                 >
-                    <input type="hidden" name="form-name" value="newsletter" />
-                    <p class="hidden">
-                        <label>Udfyld ikke dette: <input name="newsletter-bot" /></label>
-                    </p>
+                    {useFormSubmit ? (
+                        <>
+                            <input type="hidden" name="_subject" value="Nyhedsbrev — Bølgen Studio" />
+                            {newsletterNext ? <input type="hidden" name="_next" value={newsletterNext} /> : null}
+                        </>
+                    ) : (
+                        <>
+                            <input type="hidden" name="form-name" value="newsletter" />
+                            <p class="hidden">
+                                <label>Udfyld ikke dette: <input name="newsletter-bot" /></label>
+                            </p>
+                        </>
+                    )}
                     <input
                         type="email"
                         name="email"
