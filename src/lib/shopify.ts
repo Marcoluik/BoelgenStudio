@@ -13,7 +13,7 @@ export interface ShopifyConfig {
 
 function getConfig(): ShopifyConfig {
   const storeDomain =
-    import.meta.env.PUBLIC_SHOPIFY_STORE_DOMAIN || "bolgenstudio.myshopify.com";
+    import.meta.env.PUBLIC_SHOPIFY_STORE_DOMAIN || "boelgenstudio.myshopify.com";
   const storefrontToken =
     import.meta.env.PUBLIC_SHOPIFY_STOREFRONT_TOKEN || "";
 
@@ -30,15 +30,24 @@ function getConfig(): ShopifyConfig {
 }
 
 /**
- * `cart.checkoutUrl` is built with the shop's primary domain. If that domain
- * points at this headless site (Netlify, Vercel, etc.), the browser requests
- * `/cart/c/*` or `/checkouts/cn/*` here → 404. Reuse path + query on the
- * Shopify-hosted origin instead. Query params must stay intact (Storefront API).
+ * `cart.checkoutUrl` uses the shop’s primary domain. If that host is your headless
+ * site (Netlify/Vercel), `/cart/*` and `/checkouts/*` must be proxied there to
+ * Shopify (see `netlify.toml` / `vercel.json`) — otherwise you get 404.
  *
- * Optional: set PUBLIC_SHOPIFY_CHECKOUT_ORIGIN=https://your-store.myshopify.com
- * if it should differ from PUBLIC_SHOPIFY_STORE_DOMAIN.
+ * When `browserHostname` matches the checkout URL’s host, we **keep** that URL so
+ * the browser hits your host first (proxy), instead of `*.myshopify.com` (Shopify
+ * often 301s that to the primary domain, which still landed on static hosting).
+ *
+ * On localhost (hostname mismatch), we rewrite checkout paths to the API origin
+ * so you still get a working checkout URL.
+ *
+ * Optional: `PUBLIC_SHOPIFY_CHECKOUT_ORIGIN` if it should differ from
+ * `PUBLIC_SHOPIFY_STORE_DOMAIN`.
  */
-export function resolveHostedCheckoutUrl(checkoutUrl: string): string {
+export function resolveHostedCheckoutUrl(
+  checkoutUrl: string,
+  browserHostname?: string
+): string {
   const trimmed = checkoutUrl.trim();
   if (!trimmed) return "";
 
@@ -59,10 +68,16 @@ export function resolveHostedCheckoutUrl(checkoutUrl: string): string {
 
   try {
     const u = new URL(withScheme);
-    // Storefront carts use /checkouts/cn/{token}/… — not /checkouts/c/ (legacy).
     const isHostedCheckoutPath =
       u.pathname.includes("/cart/c/") || u.pathname.includes("/checkouts/");
     if (!isHostedCheckoutPath) return trimmed;
+
+    if (
+      browserHostname &&
+      u.hostname.toLowerCase() === browserHostname.toLowerCase()
+    ) {
+      return trimmed;
+    }
 
     const base = new URL(shopifyOrigin);
     return `${base.origin}${u.pathname}${u.search}`;

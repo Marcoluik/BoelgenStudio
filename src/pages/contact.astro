@@ -2,10 +2,10 @@
 import Layout from "../layouts/Layout.astro";
 import Navigation from "../components/Navigation.astro";
 
-const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL?.trim();
-const useFormSubmit = Boolean(contactEmail);
+const formSubmitRecipient = import.meta.env.PUBLIC_FORMSUBMIT_RECIPIENT?.trim() || "8713123e93f6baf78af5e327439c1129";
+const useFormSubmit = Boolean(formSubmitRecipient);
 const siteBase = import.meta.env.SITE?.replace(/\/$/, "") ?? "";
-const formAction = useFormSubmit ? `https://formsubmit.co/${encodeURIComponent(contactEmail)}` : undefined;
+const formAction = useFormSubmit ? `https://formsubmit.co/${encodeURIComponent(formSubmitRecipient)}` : undefined;
 const redirectAfterSubmit = useFormSubmit && siteBase ? `${siteBase}/contact?success=1` : "";
 ---
 

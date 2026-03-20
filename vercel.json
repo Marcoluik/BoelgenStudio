@@ -1,0 +1,13 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    {
+      "source": "/cart/:path*",
+      "destination": "https://boelgenstudio.myshopify.com/cart/:path*"
+    },
+    {
+      "source": "/checkouts/:path*",
+      "destination": "https://boelgenstudio.myshopify.com/checkouts/:path*"
+    }
+  ]
+}

@@ -1,8 +1,8 @@
 ---
-const contactEmail = import.meta.env.PUBLIC_CONTACT_EMAIL?.trim();
-const useFormSubmit = Boolean(contactEmail);
+const formSubmitRecipient = import.meta.env.PUBLIC_FORMSUBMIT_RECIPIENT?.trim() || "8713123e93f6baf78af5e327439c1129";
+const useFormSubmit = Boolean(formSubmitRecipient);
 const siteBase = import.meta.env.SITE?.replace(/\/$/, "") ?? "";
-const newsletterAction = useFormSubmit ? `https://formsubmit.co/${encodeURIComponent(contactEmail)}` : undefined;
+const newsletterAction = useFormSubmit ? `https://formsubmit.co/${encodeURIComponent(formSubmitRecipient)}` : undefined;
 const newsletterNext = useFormSubmit && siteBase ? `${siteBase}/` : "";
 ---
 
