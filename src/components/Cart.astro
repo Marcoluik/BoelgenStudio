@@ -115,7 +115,7 @@
 <script>
     import gsap from "gsap";
     import { getCart } from "../lib/cart-client";
-    import { removeCartLine, updateCartLine } from "../lib/shopify";
+    import { removeCartLine, updateCartLine, resolveHostedCheckoutUrl } from "../lib/shopify";
     import { getCartId, setCartId, dispatchCartUpdated } from "../lib/cart-store";
 
     const cartBtn = document.querySelector('[aria-label="Kurv"]');
@@ -148,12 +148,14 @@
         if (checkoutBtnLabel) checkoutBtnLabel.textContent = CHECKOUT_LABEL_LOADING;
         try {
             const cart = await getCart();
-            let url = cart?.checkoutUrl?.trim() ?? "";
+            let url = resolveHostedCheckoutUrl(cart?.checkoutUrl ?? "");
             if (url.startsWith("//")) url = `${window.location.protocol}${url}`;
             if (url.startsWith("http")) {
                 window.location.assign(url);
                 return;
             }
+            console.warn("[cart] No checkout URL from Shopify; cart:", cart);
+            alert("Kunne ikke åbne kassen. Prøv igen, eller kontakt os.");
             setCheckoutButtonIdle();
             await renderCart();
         } catch {

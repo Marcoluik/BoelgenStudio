@@ -29,6 +29,48 @@ function getConfig(): ShopifyConfig {
   };
 }
 
+/**
+ * `cart.checkoutUrl` is built with the shop's primary domain. If that domain
+ * points at this headless site (Netlify, Vercel, etc.), the browser requests
+ * `/cart/c/*` or `/checkouts/cn/*` here → 404. Reuse path + query on the
+ * Shopify-hosted origin instead. Query params must stay intact (Storefront API).
+ *
+ * Optional: set PUBLIC_SHOPIFY_CHECKOUT_ORIGIN=https://your-store.myshopify.com
+ * if it should differ from PUBLIC_SHOPIFY_STORE_DOMAIN.
+ */
+export function resolveHostedCheckoutUrl(checkoutUrl: string): string {
+  const trimmed = checkoutUrl.trim();
+  if (!trimmed) return "";
+
+  const withScheme = trimmed.startsWith("//") ? `https:${trimmed}` : trimmed;
+  if (!/^https?:\/\//i.test(withScheme)) return trimmed;
+
+  const envOrigin = import.meta.env.PUBLIC_SHOPIFY_CHECKOUT_ORIGIN;
+  const explicitOrigin =
+    typeof envOrigin === "string" && envOrigin.length > 0
+      ? envOrigin.replace(/\/$/, "")
+      : "";
+
+  const { storeDomain } = getConfig();
+  const shopifyOrigin =
+    explicitOrigin || (storeDomain ? `https://${storeDomain}` : "");
+
+  if (!shopifyOrigin) return trimmed;
+
+  try {
+    const u = new URL(withScheme);
+    // Storefront carts use /checkouts/cn/{token}/… — not /checkouts/c/ (legacy).
+    const isHostedCheckoutPath =
+      u.pathname.includes("/cart/c/") || u.pathname.includes("/checkouts/");
+    if (!isHostedCheckoutPath) return trimmed;
+
+    const base = new URL(shopifyOrigin);
+    return `${base.origin}${u.pathname}${u.search}`;
+  } catch {
+    return trimmed;
+  }
+}
+
 const FETCH_TIMEOUT_MS = 8000;
 
 export async function shopifyFetch<T>(query: string, variables?: Record<string, unknown>): Promise<T> {
