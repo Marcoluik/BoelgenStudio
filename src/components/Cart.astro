@@ -148,10 +148,7 @@
         if (checkoutBtnLabel) checkoutBtnLabel.textContent = CHECKOUT_LABEL_LOADING;
         try {
             const cart = await getCart();
-            let url = resolveHostedCheckoutUrl(
-                cart?.checkoutUrl ?? "",
-                window.location.hostname
-            );
+            let url = resolveHostedCheckoutUrl(cart?.checkoutUrl ?? "");
             if (url.startsWith("//")) url = `${window.location.protocol}${url}`;
             if (url.startsWith("http")) {
                 window.location.assign(url);

@@ -30,24 +30,20 @@ function getConfig(): ShopifyConfig {
 }
 
 /**
- * `cart.checkoutUrl` uses the shop’s primary domain. If that host is your headless
- * site (Netlify/Vercel), `/cart/*` and `/checkouts/*` must be proxied there to
- * Shopify (see `netlify.toml` / `vercel.json`) — otherwise you get 404.
+ * Rewrites `cart.checkoutUrl` onto `*.myshopify.com` when it points at `/cart/c/*`
+ * or `/checkouts/*`. Shopify always 301s those URLs to the shop’s **primary**
+ * domain — so that domain must reach **Shopify**, not Netlify (static site on the
+ * same host → 404; Netlify “proxy” to Shopify → 301 back to same host → redirect
+ * loop / ERR_TOO_MANY_REDIRECTS).
  *
- * When `browserHostname` matches the checkout URL’s host, we **keep** that URL so
- * the browser hits your host first (proxy), instead of `*.myshopify.com` (Shopify
- * often 301s that to the primary domain, which still landed on static hosting).
- *
- * On localhost (hostname mismatch), we rewrite checkout paths to the API origin
- * so you still get a working checkout URL.
+ * Hosting pattern: Astro on **www.** (Netlify), apex **bolgenstudio.com** DNS
+ * til Shopify (Admin → Domæner). Kunder på www: først myshopify, så 301 til apex
+ * = checkout hos Shopify.
  *
  * Optional: `PUBLIC_SHOPIFY_CHECKOUT_ORIGIN` if it should differ from
  * `PUBLIC_SHOPIFY_STORE_DOMAIN`.
  */
-export function resolveHostedCheckoutUrl(
-  checkoutUrl: string,
-  browserHostname?: string
-): string {
+export function resolveHostedCheckoutUrl(checkoutUrl: string): string {
   const trimmed = checkoutUrl.trim();
   if (!trimmed) return "";
 
@@ -71,13 +67,6 @@ export function resolveHostedCheckoutUrl(
     const isHostedCheckoutPath =
       u.pathname.includes("/cart/c/") || u.pathname.includes("/checkouts/");
     if (!isHostedCheckoutPath) return trimmed;
-
-    if (
-      browserHostname &&
-      u.hostname.toLowerCase() === browserHostname.toLowerCase()
-    ) {
-      return trimmed;
-    }
 
     const base = new URL(shopifyOrigin);
     return `${base.origin}${u.pathname}${u.search}`;
