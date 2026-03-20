@@ -30,18 +30,22 @@ function getConfig(): ShopifyConfig {
 }
 
 /**
- * Rewrites `cart.checkoutUrl` onto `*.myshopify.com` when it points at `/cart/c/*`
- * or `/checkouts/*`. Shopify always 301s those URLs to the shop’s **primary**
- * domain — so that domain must reach **Shopify**, not Netlify (static site on the
- * same host → 404; Netlify “proxy” to Shopify → 301 back to same host → redirect
- * loop / ERR_TOO_MANY_REDIRECTS).
+ * Rewrites `cart.checkoutUrl` onto a Shopify-served host when it points at
+ * `/cart/c/*` or `/checkouts/*`.
  *
- * Hosting pattern: Astro on **www.** (Netlify), apex **bolgenstudio.com** DNS
- * til Shopify (Admin → Domæner). Kunder på www: først myshopify, så 301 til apex
- * = checkout hos Shopify.
+ * For this project the safe production split is:
+ * - `bolgenstudio.com` -> Netlify (Astro storefront)
+ * - `shop.bolgenstudio.com` -> Shopify checkout
+ * - `boelgenstudio.myshopify.com` -> Storefront API origin
  *
- * Optional: `PUBLIC_SHOPIFY_CHECKOUT_ORIGIN` if it should differ from
- * `PUBLIC_SHOPIFY_STORE_DOMAIN`.
+ * Shopify redirects checkout URLs to the shop's primary domain, so checkout must
+ * land on a hostname that Shopify serves. If the same hostname is owned by
+ * Netlify, checkout becomes 404 or redirect-loops.
+ *
+ * Set `PUBLIC_SHOPIFY_CHECKOUT_ORIGIN=https://shop.bolgenstudio.com` in
+ * production. `PUBLIC_SHOPIFY_STORE_DOMAIN` should remain the `*.myshopify.com`
+ * domain used for Storefront API requests, while the storefront itself can stay
+ * on Netlify at `bolgenstudio.com`.
  */
 export function resolveHostedCheckoutUrl(checkoutUrl: string): string {
   const trimmed = checkoutUrl.trim();
