@@ -33,19 +33,21 @@ function getConfig(): ShopifyConfig {
  * Rewrites `cart.checkoutUrl` onto a Shopify-served host when it points at
  * `/cart/c/*` or `/checkouts/*`.
  *
- * For this project the safe production split is:
+ * For this project the simplest production setup is:
  * - `bolgenstudio.com` -> Netlify (Astro storefront)
- * - `shop.bolgenstudio.com` -> Shopify checkout
- * - `boelgenstudio.myshopify.com` -> Storefront API origin
+ * - `boelgenstudio.myshopify.com` -> Shopify checkout + Storefront API origin
  *
  * Shopify redirects checkout URLs to the shop's primary domain, so checkout must
  * land on a hostname that Shopify serves. If the same hostname is owned by
  * Netlify, checkout becomes 404 or redirect-loops.
  *
- * Set `PUBLIC_SHOPIFY_CHECKOUT_ORIGIN=https://shop.bolgenstudio.com` in
- * production. `PUBLIC_SHOPIFY_STORE_DOMAIN` should remain the `*.myshopify.com`
- * domain used for Storefront API requests, while the storefront itself can stay
- * on Netlify at `bolgenstudio.com`.
+ * Immediate fix: keep `PUBLIC_SHOPIFY_STORE_DOMAIN=boelgenstudio.myshopify.com`,
+ * make that Shopify domain the shop's Primary domain, and do not set
+ * `PUBLIC_SHOPIFY_CHECKOUT_ORIGIN`.
+ *
+ * Optional later: if you want a branded checkout domain, set
+ * `PUBLIC_SHOPIFY_CHECKOUT_ORIGIN=https://shop.bolgenstudio.com` after that
+ * subdomain is connected in Shopify and serving valid SSL.
  */
 export function resolveHostedCheckoutUrl(checkoutUrl: string): string {
   const trimmed = checkoutUrl.trim();
