@@ -1,0 +1,827 @@
+---
+// Admin-konsol: ordrer og lager. Selvstændig side uden sitets layout.
+// Al data hentes i browseren fra /api/admin/... efter login.
+---
+
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>Bølgen admin</title>
+    <style is:global>
+      :root {
+        --bg: #f5f4f0;
+        --surface: #ffffff;
+        --ink: #1c1d1f;
+        --muted: #66686d;
+        --line: #dedcd5;
+        --accent: #1f3a4d;
+        --ok: #1f6b45;
+        --ok-bg: #e3f1e8;
+        --warn: #8a4b00;
+        --warn-bg: #fdf0d8;
+        --bad: #a12a2a;
+        --bad-bg: #fbe6e4;
+        --info-bg: #e4ecf3;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      #app {
+        max-width: 880px;
+        margin: 0 auto;
+        padding: 20px 16px 64px;
+      }
+      h1 {
+        font-size: 1.25rem;
+        margin: 0;
+      }
+      h2 {
+        font-size: 1rem;
+        margin: 0;
+      }
+      p {
+        margin: 0;
+      }
+      button,
+      input {
+        font: inherit;
+        color: inherit;
+      }
+      button {
+        min-height: 40px;
+        padding: 6px 14px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--surface);
+        cursor: pointer;
+      }
+      button:hover {
+        border-color: var(--muted);
+      }
+      button:disabled {
+        opacity: 0.55;
+        cursor: default;
+      }
+      button.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      input[type="text"],
+      input[type="password"] {
+        min-height: 40px;
+        padding: 6px 10px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: var(--surface);
+        width: 100%;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      .muted {
+        color: var(--muted);
+      }
+      .small {
+        font-size: 0.875rem;
+      }
+      .error {
+        color: var(--bad);
+      }
+      .success {
+        color: var(--ok);
+      }
+
+      /* Login */
+      .login {
+        max-width: 340px;
+        margin: 12vh auto 0;
+        padding: 24px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        display: grid;
+        gap: 12px;
+      }
+      .login label {
+        display: grid;
+        gap: 4px;
+        font-size: 0.875rem;
+      }
+
+      /* Top og faner */
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .tabs {
+        display: flex;
+        gap: 4px;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 16px;
+      }
+      .tabs button {
+        border: 0;
+        border-bottom: 2px solid transparent;
+        border-radius: 0;
+        background: none;
+        padding: 8px 14px;
+        color: var(--muted);
+      }
+      .tabs button[aria-selected="true"] {
+        color: var(--ink);
+        border-bottom-color: var(--accent);
+        font-weight: 600;
+      }
+      .toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      /* Ordrer */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 12px;
+        display: grid;
+        gap: 12px;
+      }
+      .card.attention {
+        border-color: #e0a84a;
+        background: #fffaf0;
+      }
+      .card-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 12px;
+      }
+      .card-head .total {
+        margin-left: auto;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+      .attention-note {
+        color: var(--warn);
+        font-weight: 600;
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px 24px;
+      }
+      .label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+        margin-bottom: 2px;
+      }
+      .cols p {
+        overflow-wrap: anywhere;
+      }
+      .items {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .items li {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .items .price {
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+        color: var(--muted);
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 999px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+      }
+      .badge.paid {
+        background: var(--info-bg);
+        color: var(--accent);
+      }
+      .badge.needs_attention {
+        background: var(--warn-bg);
+        color: var(--warn);
+      }
+      .badge.shipped {
+        background: var(--ok-bg);
+        color: var(--ok);
+      }
+      .badge.refunded {
+        background: #ebebeb;
+        color: var(--muted);
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        padding-top: 12px;
+        border-top: 1px solid var(--line);
+      }
+      .actions input {
+        flex: 1 1 180px;
+        width: auto;
+      }
+      .actions .feedback {
+        flex-basis: 100%;
+      }
+
+      /* Lager */
+      .product {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 12px;
+      }
+      .product-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 4px 10px;
+        margin-bottom: 8px;
+      }
+      .table-wrap {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th {
+        text-align: left;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+        font-weight: 500;
+      }
+      th,
+      td {
+        padding: 6px 12px 6px 0;
+        white-space: nowrap;
+      }
+      tbody tr {
+        border-top: 1px solid var(--line);
+      }
+      td input[type="text"] {
+        width: 5.5rem;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      td input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        vertical-align: middle;
+      }
+      td.feedback {
+        white-space: normal;
+        min-width: 7rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="app"></main>
+
+    <script>
+      interface OrderItem {
+        description: string;
+        quantity: number;
+        unit_price_ore: number;
+      }
+
+      interface Order {
+        id: string;
+        email: string | null;
+        customer_name: string | null;
+        phone: string | null;
+        shipping_address: unknown;
+        amount_total_ore: number;
+        status: string;
+        tracking: string | null;
+        created_at: string;
+        shipped_at: string | null;
+        items?: OrderItem[];
+      }
+
+      interface Variant {
+        id: string;
+        color: string;
+        size: string;
+        price_ore: number;
+        stock: number;
+        active: boolean;
+      }
+
+      interface Product {
+        id: string;
+        name: string;
+        sub_name: string;
+        active: boolean;
+        variants: Variant[];
+      }
+
+      type Tab = "orders" | "stock";
+
+      const TOKEN_KEY = "bolgen-admin-token";
+      const STATUS_LABELS: Record<string, string> = {
+        paid: "Betalt",
+        needs_attention: "Kræver handling",
+        shipped: "Sendt",
+        refunded: "Refunderet",
+      };
+      const REFUND_NOTE = "Selve pengene skal refunderes i Stripes dashboard.";
+
+      const app = document.getElementById("app")!;
+      const money = new Intl.NumberFormat("da-DK", { style: "currency", currency: "DKK" });
+      const dateTime = new Intl.DateTimeFormat("da-DK", { dateStyle: "medium", timeStyle: "short" });
+
+      /** Signalerer, at login-formularen allerede er vist, så kalderen bare skal stoppe. */
+      class LoggedOut extends Error {}
+
+      // ---------- Små hjælpere ----------
+
+      /** Opretter et element. Tekst sættes altid som textContent, aldrig som HTML. */
+      function el<K extends keyof HTMLElementTagNameMap>(
+        tag: K,
+        className = "",
+        text = "",
+      ): HTMLElementTagNameMap[K] {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text) node.textContent = text;
+        return node;
+      }
+
+      function formatDate(value: string | null): string {
+        if (!value) return "";
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? "" : dateTime.format(date);
+      }
+
+      function getToken(): string | null {
+        try {
+          return sessionStorage.getItem(TOKEN_KEY);
+        } catch {
+          return null;
+        }
+      }
+
+      function setToken(token: string | null): void {
+        try {
+          if (token) sessionStorage.setItem(TOKEN_KEY, token);
+          else sessionStorage.removeItem(TOKEN_KEY);
+        } catch {
+          // Uden sessionStorage virker siden stadig, indtil den genindlæses
+        }
+        memoryToken = token;
+      }
+
+      let memoryToken: string | null = getToken();
+
+      async function api<T>(path: string, body?: unknown): Promise<T> {
+        let response: Response;
+        try {
+          response = await fetch(path, {
+            method: body === undefined ? "GET" : "POST",
+            headers: {
+              authorization: `Bearer ${memoryToken ?? ""}`,
+              ...(body === undefined ? {} : { "content-type": "application/json" }),
+            },
+            body: body === undefined ? undefined : JSON.stringify(body),
+          });
+        } catch {
+          throw new Error("Ingen forbindelse til serveren.");
+        }
+
+        if (response.status === 401) {
+          setToken(null);
+          showLogin("Du er blevet logget ud. Log ind igen.");
+          throw new LoggedOut();
+        }
+        if (response.status === 503) throw new Error("Admin er ikke sat op på serveren (ADMIN_PASSWORD mangler).");
+        if (!response.ok) throw new Error(`Noget gik galt (fejl ${response.status}).`);
+        return (await response.json()) as T;
+      }
+
+      function errorText(error: unknown): string {
+        return error instanceof Error && error.message ? error.message : "Noget gik galt.";
+      }
+
+      // ---------- Login ----------
+
+      function showLogin(message = ""): void {
+        const form = el("form", "login");
+        form.append(el("h1", "", "Bølgen admin"));
+
+        const label = el("label", "", "Kodeord");
+        const input = el("input");
+        input.type = "password";
+        input.autocomplete = "current-password";
+        input.required = true;
+        label.append(input);
+
+        const submit = el("button", "primary", "Log ind");
+        submit.type = "submit";
+        const feedback = el("p", "small error", message);
+        feedback.setAttribute("role", "alert");
+        form.append(label, submit, feedback);
+
+        form.addEventListener("submit", async (event) => {
+          event.preventDefault();
+          submit.disabled = true;
+          feedback.textContent = "";
+          try {
+            const response = await fetch("/api/admin/login", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ password: input.value }),
+            });
+            if (response.status === 401) throw new Error("Forkert kodeord.");
+            if (response.status === 503) throw new Error("Admin er ikke sat op på serveren (ADMIN_PASSWORD mangler).");
+            if (!response.ok) throw new Error(`Noget gik galt (fejl ${response.status}).`);
+            const data = (await response.json()) as { token?: unknown };
+            if (typeof data.token !== "string") throw new Error("Uventet svar fra serveren.");
+            setToken(data.token);
+            showConsole();
+          } catch (error) {
+            feedback.textContent = error instanceof TypeError ? "Ingen forbindelse til serveren." : errorText(error);
+            submit.disabled = false;
+            input.select();
+          }
+        });
+
+        app.replaceChildren(form);
+        input.focus();
+      }
+
+      // ---------- Ramme med faner ----------
+
+      function showConsole(initial: Tab = "orders"): void {
+        const top = el("div", "top");
+        const logout = el("button", "", "Log ud");
+        logout.addEventListener("click", () => {
+          setToken(null);
+          showLogin();
+        });
+        top.append(el("h1", "", "Bølgen admin"), logout);
+
+        const tabs = el("div", "tabs");
+        tabs.setAttribute("role", "tablist");
+        const panel = el("div");
+        panel.setAttribute("role", "tabpanel");
+
+        const buttons: Record<Tab, HTMLButtonElement> = {
+          orders: el("button", "", "Ordrer"),
+          stock: el("button", "", "Lager"),
+        };
+
+        function select(tab: Tab): void {
+          for (const [name, button] of Object.entries(buttons)) {
+            button.setAttribute("aria-selected", String(name === tab));
+          }
+          if (tab === "orders") void showOrders(panel);
+          else void showStock(panel);
+        }
+
+        for (const [name, button] of Object.entries(buttons) as [Tab, HTMLButtonElement][]) {
+          button.setAttribute("role", "tab");
+          button.addEventListener("click", () => select(name));
+          tabs.append(button);
+        }
+
+        app.replaceChildren(top, tabs, panel);
+        select(initial);
+      }
+
+      /** Viser "Henter…", kører load og viser en fejl med "Prøv igen", hvis det mislykkes. */
+      async function loadInto(panel: HTMLElement, load: () => Promise<void>): Promise<void> {
+        panel.replaceChildren(el("p", "muted", "Henter…"));
+        try {
+          await load();
+        } catch (error) {
+          if (error instanceof LoggedOut) return;
+          const retry = el("button", "", "Prøv igen");
+          retry.addEventListener("click", () => void loadInto(panel, load));
+          const box = el("div", "toolbar");
+          box.append(el("p", "error", errorText(error)), retry);
+          panel.replaceChildren(box);
+        }
+      }
+
+      // ---------- Ordrer ----------
+
+      /** Adressen er enten Stripes shipping_details ({ name, address: {...} }) eller en ren adresse. */
+      function addressLines(raw: unknown): string[] {
+        if (!raw || typeof raw !== "object") return [];
+        const outer = raw as Record<string, unknown>;
+        const nested = outer.address && typeof outer.address === "object";
+        const address = (nested ? outer.address : outer) as Record<string, unknown>;
+        const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
+
+        return [
+          nested ? text(outer.name) : "",
+          text(address.line1),
+          text(address.line2),
+          [text(address.postal_code), text(address.city)].filter(Boolean).join(" "),
+          text(address.country),
+        ].filter(Boolean);
+      }
+
+      function field(label: string, lines: string[]): HTMLElement {
+        const box = el("div");
+        box.append(el("p", "label", label));
+        if (lines.length === 0) box.append(el("p", "muted", "Ikke oplyst"));
+        for (const line of lines) box.append(el("p", "", line));
+        return box;
+      }
+
+      function orderCard(order: Order, reload: () => void): HTMLElement {
+        const attention = order.status === "needs_attention";
+        const card = el("article", attention ? "card attention" : "card");
+
+        const head = el("div", "card-head");
+        head.append(
+          el("span", "", formatDate(order.created_at)),
+          el("span", `badge ${order.status}`, STATUS_LABELS[order.status] ?? order.status),
+          el("span", "total", money.format(order.amount_total_ore / 100)),
+        );
+        card.append(head);
+        if (attention) card.append(el("p", "attention-note", "Betalt, men lageret rakte ikke"));
+
+        const cols = el("div", "cols");
+        const customer = [order.customer_name, order.email, order.phone].filter((v): v is string => Boolean(v));
+        cols.append(field("Kunde", customer), field("Leveringsadresse", addressLines(order.shipping_address)));
+        card.append(cols);
+
+        const itemsBox = el("div");
+        itemsBox.append(el("p", "label", "Varer"));
+        const list = el("ul", "items");
+        for (const item of order.items ?? []) {
+          const row = el("li");
+          row.append(
+            el("span", "", `${item.quantity} × ${item.description}`),
+            el("span", "price", money.format(item.unit_price_ore / 100)),
+          );
+          list.append(row);
+        }
+        itemsBox.append(list);
+        card.append(itemsBox);
+
+        if (order.status === "shipped") {
+          const shipped = [`Sendt ${formatDate(order.shipped_at)}`.trim()];
+          if (order.tracking) shipped.push(`Sporingsnummer: ${order.tracking}`);
+          card.append(field("Forsendelse", shipped));
+        }
+
+        // Handlinger
+        const actions = el("div", "actions");
+        const feedback = el("p", "small feedback");
+        feedback.setAttribute("role", "status");
+
+        async function setStatus(status: string, tracking?: string): Promise<void> {
+          for (const button of actions.querySelectorAll("button")) button.disabled = true;
+          feedback.className = "small feedback muted";
+          feedback.textContent = "Gemmer…";
+          try {
+            await api("/api/admin/order", { id: order.id, status, ...(tracking ? { tracking } : {}) });
+            reload();
+          } catch (error) {
+            if (error instanceof LoggedOut) return;
+            for (const button of actions.querySelectorAll("button")) button.disabled = false;
+            feedback.className = "small feedback error";
+            feedback.textContent = errorText(error);
+          }
+        }
+
+        function action(label: string, className: string, onClick: () => void): HTMLButtonElement {
+          const button = el("button", className, label);
+          button.addEventListener("click", onClick);
+          return button;
+        }
+
+        const refund = action("Markér som refunderet", "", () => {
+          if (confirm(`Markér ordren som refunderet?\n\n${REFUND_NOTE}`)) void setStatus("refunded");
+        });
+
+        if (order.status === "paid" || attention) {
+          const tracking = el("input");
+          tracking.type = "text";
+          tracking.placeholder = "Sporingsnummer (valgfrit)";
+          tracking.maxLength = 200;
+          tracking.setAttribute("aria-label", "Sporingsnummer (valgfrit)");
+          const ship = action("Markér som sendt", "primary", () => void setStatus("shipped", tracking.value.trim()));
+          actions.append(tracking, ship, refund);
+        } else if (order.status === "shipped") {
+          actions.append(
+            action("Fortryd sendt", "", () => void setStatus("paid")),
+            refund,
+          );
+        } else if (order.status === "refunded") {
+          actions.append(action("Fortryd refunderet", "", () => void setStatus("paid")));
+        }
+
+        if (order.status !== "refunded") {
+          actions.append(el("p", "small muted feedback", `Refundering: ${REFUND_NOTE}`));
+        }
+        actions.append(feedback);
+        card.append(actions);
+        return card;
+      }
+
+      async function showOrders(panel: HTMLElement): Promise<void> {
+        const reload = () => void showOrders(panel);
+        await loadInto(panel, async () => {
+          const { orders } = await api<{ orders: Order[] }>("/api/admin/orders");
+
+          // Serveren sorterer nyeste først; ordrer der kræver handling løftes til toppen
+          const urgent = orders.filter((o) => o.status === "needs_attention");
+          const rest = orders.filter((o) => o.status !== "needs_attention");
+          const toShip = orders.filter((o) => o.status === "paid").length;
+
+          const toolbar = el("div", "toolbar");
+          const refresh = el("button", "", "Opdater");
+          refresh.addEventListener("click", reload);
+          const summary =
+            orders.length === 0
+              ? "Ingen ordrer endnu."
+              : `${orders.length} ordrer · ${toShip} skal sendes · ${urgent.length} kræver handling`;
+          toolbar.append(el("p", "muted small", summary), refresh);
+
+          panel.replaceChildren(toolbar, ...[...urgent, ...rest].map((order) => orderCard(order, reload)));
+        });
+      }
+
+      // ---------- Lager ----------
+
+      function formatKr(ore: number): string {
+        return (ore / 100).toFixed(2).replace(".", ",");
+      }
+
+      /** "599", "599,5" eller "599.50" -> øre. null hvis det ikke er et gyldigt beløb over 0. */
+      function parseKr(value: string): number | null {
+        const cleaned = value.trim().replace(/\s|kr\.?$/gi, "");
+        if (!/^\d{1,7}([.,]\d{1,2})?$/.test(cleaned)) return null;
+        const ore = Math.round(Number(cleaned.replace(",", ".")) * 100);
+        return ore > 0 ? ore : null;
+      }
+
+      function parseStock(value: string): number | null {
+        const cleaned = value.trim();
+        return /^\d{1,6}$/.test(cleaned) ? Number(cleaned) : null;
+      }
+
+      function variantRow(variant: Variant): HTMLTableRowElement {
+        let saved = variant;
+        const row = el("tr");
+
+        const price = el("input");
+        price.type = "text";
+        price.inputMode = "decimal";
+        price.setAttribute("aria-label", "Pris i kr.");
+
+        const stock = el("input");
+        stock.type = "text";
+        stock.inputMode = "numeric";
+        stock.setAttribute("aria-label", "Antal på lager");
+
+        const active = el("input");
+        active.type = "checkbox";
+        active.setAttribute("aria-label", "Aktiv");
+
+        const save = el("button", "", "Gem");
+        const feedback = el("td", "small feedback");
+        feedback.setAttribute("role", "status");
+
+        function fill(): void {
+          price.value = formatKr(saved.price_ore);
+          stock.value = String(saved.stock);
+          active.checked = saved.active;
+        }
+        fill();
+
+        function show(kind: "muted" | "success" | "error", text: string): void {
+          feedback.className = `small feedback ${kind}`;
+          feedback.textContent = text;
+        }
+
+        save.addEventListener("click", async () => {
+          const priceOre = parseKr(price.value);
+          const stockCount = parseStock(stock.value);
+          if (priceOre === null) return show("error", "Ugyldig pris");
+          if (stockCount === null) return show("error", "Ugyldigt antal");
+
+          // Send kun det, der er ændret, så et salg i mellemtiden ikke overskrives
+          const changes: { stock?: number; price_ore?: number; active?: boolean } = {};
+          if (priceOre !== saved.price_ore) changes.price_ore = priceOre;
+          if (stockCount !== saved.stock) changes.stock = stockCount;
+          if (active.checked !== saved.active) changes.active = active.checked;
+          if (Object.keys(changes).length === 0) {
+            fill();
+            return show("muted", "Ingen ændringer");
+          }
+
+          save.disabled = true;
+          show("muted", "Gemmer…");
+          try {
+            const result = await api<{ variant: Variant }>("/api/admin/variant", { id: saved.id, ...changes });
+            saved = result.variant;
+            fill();
+            show("success", "Gemt");
+          } catch (error) {
+            if (error instanceof LoggedOut) return;
+            show("error", errorText(error));
+          } finally {
+            save.disabled = false;
+          }
+        });
+
+        const cells: (string | HTMLElement)[] = [variant.color || "–", variant.size || "–", price, stock, active, save];
+        for (const content of cells) {
+          const cell = el("td");
+          cell.append(content);
+          row.append(cell);
+        }
+        row.append(feedback);
+        return row;
+      }
+
+      async function showStock(panel: HTMLElement): Promise<void> {
+        await loadInto(panel, async () => {
+          const { products } = await api<{ products: Product[] }>("/api/admin/products");
+
+          const toolbar = el("div", "toolbar");
+          const refresh = el("button", "", "Opdater");
+          refresh.addEventListener("click", () => void showStock(panel));
+          toolbar.append(
+            el("p", "muted small", products.length === 0 ? "Ingen produkter endnu." : "Priser er i kr. Gem hver række for sig."),
+            refresh,
+          );
+
+          const sections = products.map((product) => {
+            const section = el("section", "product");
+            const head = el("div", "product-head");
+            head.append(el("h2", "", product.name));
+            if (product.sub_name) head.append(el("span", "muted small", product.sub_name));
+            if (!product.active) head.append(el("span", "badge refunded", "Skjult i butikken"));
+            section.append(head);
+
+            if (product.variants.length === 0) {
+              section.append(el("p", "muted small", "Ingen varianter."));
+              return section;
+            }
+
+            const table = el("table");
+            const headRow = el("tr");
+            for (const title of ["Farve", "Størrelse", "Pris (kr.)", "Lager", "Aktiv", "", ""]) {
+              headRow.append(el("th", "", title));
+            }
+            const thead = el("thead");
+            thead.append(headRow);
+            const tbody = el("tbody");
+            tbody.append(...product.variants.map(variantRow));
+            table.append(thead, tbody);
+
+            const wrap = el("div", "table-wrap");
+            wrap.append(table);
+            section.append(wrap);
+            return section;
+          });
+
+          panel.replaceChildren(toolbar, ...sections);
+        });
+      }
+
+      // ---------- Start ----------
+
+      if (memoryToken) showConsole();
+      else showLogin();
+    </script>
+  </body>
+</html>

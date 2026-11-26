@@ -1,0 +1,138 @@
+---
+import { focusCrop } from "../lib/images";
+import type { Product } from "../lib/products";
+
+interface Props {
+  products: Product[];
+}
+
+const { products } = Astro.props;
+
+// Ét felt pr. farve. Feltet er farvet som hoodien selv: hvid bomuld eller sort, begge med blå tråd.
+const panels = products.flatMap((product) =>
+  product.colorGroups.map((group) => ({
+    product,
+    group,
+    theme: group.key === "hvid" || group.key === "sort" ? group.key : undefined,
+    href: `/product/${product.handle}${product.hasColors ? `?color=${group.key}` : ""}`,
+  }))
+);
+---
+
+<section id="shop" aria-label="Shop">
+  <div class={`grid ${panels.length > 1 ? "md:grid-cols-2" : ""}`}>
+    {
+      panels.map(({ product, group, theme, href }, i) => {
+        const front = group.pics[0];
+        // Ved hover vises nærbilledet af broderiet, hvis det findes
+        const back = group.pics.find((pic) => pic.name === "kaligrafi") ?? group.pics[1];
+        const focusStyle = focusCrop(front);
+        return (
+          <article class="shop-panel px-4 py-12 sm:px-8 sm:py-16 lg:px-14 lg:py-20" data-theme={theme}>
+            <header class="flex items-end justify-between gap-6">
+              <h2 class="display text-[clamp(4.5rem,11vw,9.5rem)]">
+                <a href={href}>{group.color || product.name}</a>
+              </h2>
+              <p class="pb-2 text-right sm:pb-4">
+                <span class="block text-ink-dim">{group.color ? product.name : ""}</span>
+                <span class="block text-xl font-semibold sm:text-2xl">{product.price}</span>
+              </p>
+            </header>
+
+            <a href={href} class="shop-photo relative mt-6 block overflow-hidden bg-surface sm:mt-8" aria-label={`Se ${product.name}${group.color ? ` i ${group.color.toLowerCase()}` : ""}`}>
+              <div class="aspect-[4/5] lg:aspect-square">
+                <img
+                  src={front.src}
+                  srcset={front.srcset}
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  width={front.width}
+                  height={front.height}
+                  alt={front.alt}
+                  loading={i < 2 ? "eager" : "lazy"}
+                  decoding="async"
+                  class={focusStyle ? "photo-front" : "photo-front absolute inset-0 h-full w-full object-cover"}
+                  style={focusStyle || undefined}
+                />
+                {back && (
+                  <img
+                    src={back.src}
+                    srcset={back.srcset}
+                    sizes="(min-width: 768px) 50vw, 100vw"
+                    width={back.width}
+                    height={back.height}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    class="photo-back absolute inset-0 h-full w-full object-cover"
+                  />
+                )}
+              </div>
+              {!group.available && product.hasVariants && (
+                <span class="absolute left-3 top-3 rounded-full bg-ground px-3 py-1.5 text-sm font-semibold text-ink">Udsolgt</span>
+              )}
+            </a>
+
+            <div class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-4">
+              {group.variants.length > 0 && (
+                <div class="flex flex-wrap items-center gap-2" role="group" aria-label={`Læg ${product.name} ${group.color} i kurven`}>
+                  <span class="mr-2 text-ink-dim">Læg i kurv</span>
+                  {group.variants.map((variant) => (
+                    <button
+                      type="button"
+                      class="chip"
+                      data-quick-add={variant.id}
+                      data-soldout={variant.available ? undefined : "true"}
+                      disabled={!variant.available}
+                      aria-label={`${variant.size}: læg i kurv${variant.available ? "" : " (udsolgt)"}`}
+                    >
+                      {variant.size}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <a href={href} class="link ml-auto">Se alle billeder</a>
+            </div>
+          </article>
+        );
+      })
+    }
+  </div>
+
+  <p class="wrap py-8 text-center text-ink-dim sm:py-10">
+    Levering på 2–4 hverdage i Danmark. 14 dages returret. Du betaler sikkert gennem Stripe.
+  </p>
+</section>
+
+<script>
+  import { addLine, openCart, toast } from "../lib/cart";
+
+  document.querySelectorAll<HTMLButtonElement>("[data-quick-add]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const variantId = button.dataset.quickAdd;
+      if (!variantId || button.dataset.busy) return;
+      button.dataset.busy = "true";
+      try {
+        await addLine(variantId, 1);
+        openCart();
+      } catch (err) {
+        console.error("[læg i kurv]", err);
+        toast("Varen blev ikke lagt i kurven. Prøv igen.", "error");
+      } finally {
+        delete button.dataset.busy;
+      }
+    });
+  });
+</script>
+
+<style>
+  .photo-back {
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+
+  @media (hover: hover) {
+    .shop-photo:hover .photo-back {
+      opacity: 1;
+    }
+  }
+</style>

@@ -1,144 +1,84 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import Navigation from "../components/Navigation.astro";
+import InfoPage from "../layouts/InfoPage.astro";
 
-const formSubmitRecipient = import.meta.env.PUBLIC_FORMSUBMIT_RECIPIENT?.trim() || "8713123e93f6baf78af5e327439c1129";
+const formSubmitRecipient =
+  import.meta.env.PUBLIC_FORMSUBMIT_RECIPIENT?.trim() || "8713123e93f6baf78af5e327439c1129";
 const useFormSubmit = Boolean(formSubmitRecipient);
 const siteBase = import.meta.env.SITE?.replace(/\/$/, "") ?? "";
 const formAction = useFormSubmit ? `https://formsubmit.co/${encodeURIComponent(formSubmitRecipient)}` : undefined;
 const redirectAfterSubmit = useFormSubmit && siteBase ? `${siteBase}/contact?success=1` : "";
 ---
 
-<Layout title="Kontakt | Bølgen Studio" description="Kontakt Bølgen Studio. Spørgsmål om ordrer, fragt eller kollektionen.">
-  <Navigation />
+<InfoPage
+  title="Kontakt | Bølgen Studio"
+  heading="Kontakt"
+  description="Kontakt Bølgen Studio. Spørgsmål om ordrer, fragt eller kollektionen."
+  eyebrow="Hjælp"
+  intro="Spørgsmål om ordrer, fragt eller kollektionen? Vi svarer typisk inden for 24–48 timer."
+>
+  <div id="contact-thanks" class="hidden border p-6 hairline sm:p-8" role="status">
+    <p class="text-xl font-semibold text-ink">Tak for din besked.</p>
+    <p class="mt-2">Vi har modtaget den og vender tilbage hurtigst muligt.</p>
+    <a href="/contact" class="mt-5 inline-block">Send en ny besked</a>
+  </div>
 
-  <main class="relative z-10 min-h-screen pt-24 sm:pt-32 pb-24 sm:pb-40">
-    <div class="fixed inset-0 pointer-events-none z-0 bg-[#000d12]">
-      <div class="absolute top-[-10%] left-[20%] w-[60%] h-[60%] bg-cyan-400/5 blur-[150px] rounded-full"></div>
-      <div class="absolute bottom-[20%] right-[10%] w-[50%] h-[50%] bg-blue-300/5 blur-[120px] rounded-full"></div>
+  <form
+    id="contact-form"
+    class="space-y-7"
+    method="POST"
+    {...useFormSubmit
+      ? { action: formAction }
+      : { name: "contact", "data-netlify": "true", "netlify-honeypot": "bot-field" }}
+  >
+    {
+      useFormSubmit ? (
+        <>
+          <input type="hidden" name="_subject" value="Kontakt — Bølgen Studio" />
+          {redirectAfterSubmit && <input type="hidden" name="_next" value={redirectAfterSubmit} />}
+        </>
+      ) : (
+        <>
+          <input type="hidden" name="form-name" value="contact" />
+          <p class="hidden">
+            <label>
+              Udfyld ikke dette: <input name="bot-field" />
+            </label>
+          </p>
+        </>
+      )
+    }
+
+    <div>
+      <label for="name" class="label">Navn</label>
+      <input type="text" id="name" name="name" required autocomplete="name" class="field mt-1" />
     </div>
 
-    <div class="container mx-auto px-4 sm:px-6 relative z-10 max-w-2xl">
-      <a href="/" class="group inline-flex items-center gap-4 py-2 -my-2 text-cyan-100/30 hover:text-cyan-100 transition-colors duration-500 text-sm tracking-[0.04em] font-light mb-12">
-        <svg width="24" height="1" viewBox="0 0 24 1" fill="none" class="w-6 rotate-180 opacity-40 group-hover:opacity-100 transition-all duration-500">
-          <line y1="0.5" x2="24" y2="0.5" stroke="currentColor" />
-        </svg>
-        Tilbage til forsiden
-      </a>
-
-      <div class="space-y-12">
-        <div>
-          <span class="w-6 h-[2px] rounded-full bg-cyan-700/50 block mb-6"></span>
-          <h1 class="text-white text-3xl sm:text-4xl lg:text-5xl font-light tracking-[0.02em] mb-4">Kontakt</h1>
-          <p class="text-white/40 text-sm tracking-[0.04em] font-light max-w-md">
-            Spørgsmål om ordrer, fragt eller kollektionen? Vi svarer typisk inden for 24–48 timer.
-          </p>
-        </div>
-
-        <div
-          id="contact-thanks"
-          class="hidden space-y-8 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 px-6 py-10 sm:px-8 sm:py-12"
-        >
-          <p class="text-white/90 text-sm tracking-[0.04em] font-light leading-relaxed">
-            Tak — vi har modtaget din besked og vender tilbage hurtigst muligt.
-          </p>
-          <a
-            href="/contact"
-            class="inline-flex text-cyan-400/80 hover:text-cyan-400 text-sm tracking-[0.04em] font-light transition-colors"
-          >
-            Send en ny besked
-          </a>
-        </div>
-
-        <form
-          id="contact-form"
-          class="space-y-8"
-          method="POST"
-          {...(useFormSubmit
-            ? { action: formAction }
-            : {
-                name: "contact",
-                "data-netlify": "true",
-                "netlify-honeypot": "bot-field",
-              })}
-        >
-          {useFormSubmit ? (
-            <>
-              <input type="hidden" name="_subject" value="Kontakt — Bølgen Studio" />
-              {redirectAfterSubmit ? <input type="hidden" name="_next" value={redirectAfterSubmit} /> : null}
-            </>
-          ) : (
-            <>
-              <input type="hidden" name="form-name" value="contact" />
-              <p class="hidden">
-                <label>Udfyld ikke dette: <input name="bot-field" /></label>
-              </p>
-            </>
-          )}
-
-          <div class="space-y-4">
-            <label for="name" class="block text-white/50 text-[10px] tracking-[0.08em] font-light">Navn</label>
-            <input
-              type="text"
-              id="name"
-              name="name"
-              required
-              class="w-full bg-transparent border-b border-white/10 py-3 text-[16px] text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500/40 transition-colors font-light"
-              placeholder="Dit navn"
-            />
-          </div>
-
-          <div class="space-y-4">
-            <label for="email" class="block text-white/50 text-[10px] tracking-[0.08em] font-light">Email</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              required
-              class="w-full bg-transparent border-b border-white/10 py-3 text-[16px] text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500/40 transition-colors font-light"
-              placeholder="din@email.dk"
-            />
-          </div>
-
-          <div class="space-y-4">
-            <label for="message" class="block text-white/50 text-[10px] tracking-[0.08em] font-light">Besked</label>
-            <textarea
-              id="message"
-              name="message"
-              required
-              rows="5"
-              class="w-full bg-transparent border-b border-white/10 py-3 text-[16px] text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500/40 transition-colors font-light resize-none"
-              placeholder="Hvordan kan vi hjælpe?"
-            ></textarea>
-          </div>
-
-          <button
-            type="submit"
-            class="w-full py-5 sm:py-6 border border-white/20 rounded-2xl text-white text-sm tracking-[0.04em] font-light relative group overflow-hidden transition-all duration-700 hover:border-cyan-400/40"
-          >
-            <div class="absolute inset-0 bg-white/[0.03] group-hover:bg-cyan-400/10 transition-colors duration-700"></div>
-            <span class="relative z-10 font-light">Send</span>
-          </button>
-        </form>
-
-        <p class="text-white/30 text-xs tracking-[0.04em] font-light">
-          Eller find os på <a href="https://instagram.com/boelgen.studio" target="_blank" rel="noopener noreferrer" class="text-cyan-400/80 hover:text-cyan-400 transition-colors">Instagram</a>.
-        </p>
-      </div>
+    <div>
+      <label for="email" class="label">E-mail</label>
+      <input type="email" id="email" name="email" required autocomplete="email" class="field mt-1" placeholder="din@email.dk" />
     </div>
-  </main>
+
+    <div>
+      <label for="message" class="label">Besked</label>
+      <textarea id="message" name="message" required rows="5" class="field mt-1 resize-none" placeholder="Hvordan kan vi hjælpe?"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary w-full sm:w-auto sm:min-w-[14rem]">Send besked</button>
+
+    <p class="text-sm text-ink-mute">
+      Eller find os på <a href="https://instagram.com/boelgen.studio" target="_blank" rel="noopener noreferrer">Instagram</a>.
+    </p>
+  </form>
 
   <script is:inline>
     (function () {
       try {
         if (new URLSearchParams(window.location.search).get("success") === "1") {
-          var thanks = document.getElementById("contact-thanks");
-          var form = document.getElementById("contact-form");
-          if (thanks) thanks.classList.remove("hidden");
-          if (form) form.classList.add("hidden");
+          document.getElementById("contact-thanks")?.classList.remove("hidden");
+          document.getElementById("contact-form")?.classList.add("hidden");
           window.history.replaceState({}, "", window.location.pathname);
         }
       } catch (_) {}
     })();
   </script>
-</Layout>
+</InfoPage>

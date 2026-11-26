@@ -1,28 +1,52 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import Navigation from "../components/Navigation.astro";
+import Craft from "../components/Craft.astro";
 import Hero from "../components/Hero.astro";
-import Collection from "../components/Collection.astro";
-import StudioFeed from "../components/StudioFeed.astro";
-import { getHomepageProductsAtBuild } from "../lib/fetch-products";
+import Lookbook from "../components/Lookbook.astro";
+import Shop from "../components/Shop.astro";
+import Layout from "../layouts/Layout.astro";
+import { getProducts } from "../lib/products";
 
-const products = await getHomepageProductsAtBuild();
+const products = await getProducts();
+const signature = products.find((p) => p.isSignature) ?? products[0];
+const productHref = signature ? `/product/${signature.handle}` : "#shop";
+const site = Astro.site?.toString().replace(/\/$/, "") ?? "";
+
+const jsonLd = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Bølgen Studio",
+    url: site,
+    logo: `${site}/logo-bolgen.svg`,
+    sameAs: ["https://instagram.com/boelgen.studio"],
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Bølgen Studio",
+    url: site,
+    inLanguage: "da-DK",
+  },
+];
 ---
 
-<Layout title="Bølgen | Studio" preloadImage="/hero-2-Gv_c13hE.jpeg">
-  <Navigation />
-
-  <main class="relative z-10">
-    <Hero />
-    <Collection products={products} />
-    <StudioFeed />
+<Layout title="Bølgen Studio | Tøj til livet ved havet" overlayNav jsonLd={jsonLd}>
+  <main>
+    <Hero price={signature?.price} />
+    <Shop products={products} />
+    {signature?.isSignature && <Craft productHref={productHref} />}
+    <Lookbook />
   </main>
 </Layout>
 
-<style>
-  /* Hide scrollbar for cleaner look if needed */
-  ::-webkit-scrollbar {
-    width: 0px;
-    background: transparent;
+<script>
+  import { toast } from "../lib/cart";
+
+  // Tilbage fra nyhedsbrevs-tilmeldingen
+  const url = new URL(window.location.href);
+  if (url.searchParams.has("tilmeldt")) {
+    url.searchParams.delete("tilmeldt");
+    window.history.replaceState({}, "", url);
+    setTimeout(() => toast("Tak, du er tilmeldt nyhedsbrevet."), 600);
   }
-</style>
+</script>

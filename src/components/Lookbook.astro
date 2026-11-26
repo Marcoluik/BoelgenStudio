@@ -1,0 +1,106 @@
+---
+import { getStudioPics } from "../lib/images";
+
+const pics = await getStudioPics();
+---
+
+{
+  pics.length > 0 && (
+    <section class="py-20 sm:py-28" aria-labelledby="lookbook-title">
+      <div class="wrap flex flex-wrap items-end justify-between gap-6">
+        <div>
+          <h2 id="lookbook-title" class="display text-[clamp(2.5rem,6vw,4.75rem)]">
+            Studie perspektiv
+          </h2>
+        </div>
+        <div class="flex items-center gap-3">
+          <a
+            href="https://instagram.com/boelgen.studio"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="link mr-3 text-[0.9375rem] text-ink-dim"
+          >
+            Følg med på Instagram
+          </a>
+          <button type="button" class="strip-btn" data-strip="-1" aria-label="Forrige billeder">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M15 5l-7 7 7 7" /></svg>
+          </button>
+          <button type="button" class="strip-btn" data-strip="1" aria-label="Næste billeder">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M9 5l7 7-7 7" /></svg>
+          </button>
+        </div>
+      </div>
+
+      <ul class="strip no-scrollbar mt-10 flex gap-3 overflow-x-auto sm:gap-4" tabindex="0" aria-label="Billeder fra Bølgen Studio">
+        {pics.map((pic) => (
+          <li class="shrink-0">
+            <img
+              src={pic.src}
+              srcset={pic.srcset}
+              sizes="(min-width: 640px) 45vw, 80vw"
+              width={pic.width}
+              height={pic.height}
+              alt={pic.alt}
+              loading="lazy"
+              decoding="async"
+              class="strip-img bg-surface object-cover"
+              style={`aspect-ratio: ${pic.width} / ${pic.height}`}
+            />
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+<script>
+  const strip = document.querySelector<HTMLElement>(".strip");
+  document.querySelectorAll<HTMLButtonElement>("[data-strip]").forEach((button) => {
+    button.addEventListener("click", () => {
+      strip?.scrollBy({ left: Number(button.dataset.strip) * strip.clientWidth * 0.8, behavior: "smooth" });
+    });
+  });
+</script>
+
+<style>
+  .strip {
+    padding-inline: max(1rem, calc((100vw - 88rem) / 2 + 2.5rem));
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: max(1rem, calc((100vw - 88rem) / 2 + 2.5rem));
+    overscroll-behavior-x: contain;
+  }
+
+  .strip li {
+    scroll-snap-align: start;
+  }
+
+  .strip-img {
+    height: clamp(17rem, 58vh, 34rem);
+    width: auto;
+    max-width: none;
+  }
+
+  .strip-btn {
+    display: inline-flex;
+    width: 3rem;
+    height: 3rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      border-color 0.2s;
+  }
+
+  .strip-btn:hover {
+    border-color: var(--ink);
+  }
+
+  @media (min-width: 640px) {
+    .strip {
+      padding-inline: max(1.5rem, calc((100vw - 88rem) / 2 + 2.5rem));
+    }
+  }
+</style>

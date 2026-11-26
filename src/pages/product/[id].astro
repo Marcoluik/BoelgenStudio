@@ -1,855 +1,678 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import Navigation from "../../components/Navigation.astro";
-import { getProductsAtBuild } from "../../lib/fetch-products";
+import { focusCrop } from "../../lib/images";
+import { getProducts, splitDescription } from "../../lib/products";
 import { SIZE_CHART_ROWS } from "../../lib/size-chart";
 
 export async function getStaticPaths() {
-    const products = await getProductsAtBuild();
-    return products.map((product) => ({
-        params: { id: product.handle },
-        props: {
-            product,
-            otherProducts: products.filter((p) => p.handle !== product.handle),
-        },
-    }));
+  const products = await getProducts();
+  return products.map((product) => ({
+    params: { id: product.handle },
+    props: {
+      product,
+      otherProducts: products.filter((p) => p.handle !== product.handle),
+    },
+  }));
 }
 
 const { product, otherProducts } = Astro.props;
-const colorGroups = product.colorGroups ?? [];
-const hasColors = (product.colors?.length ?? 0) > 1;
-const firstColorGroup = colorGroups[0] ?? { mainImage: product.mainImage, backImage: product.backImage, gallery: product.gallery, variants: product.variants };
-const availableCount = product.variants.filter((v) => v.availableForSale).length;
-const totalVariants = product.variants.length;
-const isSoldOut = totalVariants > 0 && availableCount === 0;
-const isLimited = availableCount > 0 && availableCount < totalVariants;
-const hasVariants = totalVariants > 0;
-const variantsForStock = firstColorGroup.variants.length > 0 ? firstColorGroup.variants : product.variants;
-const firstAvailableVariant = variantsForStock.find((v) => v.availableForSale) ?? variantsForStock[0];
-const displaySubName = product.subName && product.subName !== product.name ? product.subName : null;
+const groups = product.colorGroups;
+const firstGroup = groups.find((g) => g.available) ?? groups[0];
+const { lead, rest } = splitDescription(product.description);
+const shortName = product.name.replace(/^Bølgen\s+/i, "");
 
-const stockMarkerAvailable = firstAvailableVariant?.availableForSale ?? false;
-const stockMarkerQty = firstAvailableVariant?.quantityAvailable;
-const stockMarkerLimited = stockMarkerAvailable && stockMarkerQty != null && stockMarkerQty <= 5;
-const stockMarkerBorder = stockMarkerAvailable ? (stockMarkerLimited ? "bg-amber-950/20 border-amber-900/20" : "bg-emerald-950/20 border-emerald-900/20") : "bg-red-950/20 border-red-900/20";
-const stockMarkerDot = stockMarkerAvailable ? (stockMarkerLimited ? "bg-amber-500" : "bg-emerald-500") : "bg-red-500 animate-pulse";
-const stockMarkerTextClass = stockMarkerAvailable ? (stockMarkerLimited ? "text-amber-400" : "text-emerald-400") : "text-red-400";
-const stockMarkerLabel = stockMarkerAvailable ? (stockMarkerQty != null ? stockMarkerQty + " tilbage" : "På lager") : "Udsolgt";
-const pageTitle = displaySubName ? product.name + " | " + displaySubName : product.name;
+const specs = product.isSignature
+  ? [
+      ["Ydre lag", "370 gsm kraftig bomuld"],
+      ["Inderlag", "280 gsm"],
+      ["Materiale", "100% bomuld"],
+      ["Lukning", "Lynlås i fuld længde"],
+      ["Broderi", "Kaligrafi på ryggen, bølgelogo ved håndleddet"],
+      ["Pasform", "Sidder en smule cropped"],
+    ]
+  : [];
 
-const DESCRIPTION_PREVIEW_LEN = 150;
-const descriptionFull = product.description;
-const descriptionIsLong = descriptionFull.length > DESCRIPTION_PREVIEW_LEN;
-const descriptionPreview = descriptionIsLong ? descriptionFull.slice(0, DESCRIPTION_PREVIEW_LEN).trim() : descriptionFull;
+const site = Astro.site?.toString().replace(/\/$/, "") ?? "";
+const absolute = (src: string) => (src.startsWith("http") ? src : `${site}${src}`);
+const pageUrl = `${site}/product/${product.handle}`;
+const ogImage = firstGroup?.pics[0]?.src;
 
-const sizeChart = SIZE_CHART_ROWS;
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: product.name,
+  description: product.description,
+  image: groups.flatMap((g) => g.pics.slice(0, 2).map((p) => absolute(p.src))),
+  brand: { "@type": "Brand", name: "Bølgen Studio" },
+  url: pageUrl,
+  offers: groups.flatMap((g) =>
+    g.variants.map((v) => ({
+      "@type": "Offer",
+      name: [g.color, v.size].filter(Boolean).join(" / "),
+      price: Number(v.amount).toFixed(2),
+      priceCurrency: product.currencyCode,
+      availability: v.available ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      itemCondition: "https://schema.org/NewCondition",
+      url: g.color ? `${pageUrl}?color=${g.key}` : pageUrl,
+    }))
+  ),
+};
+
+/** Stående billeder står to og to; liggende fylder hele bredden. */
+function galleryCells(pics: (typeof groups)[number]["pics"]) {
+  const cells = pics.map((pic) => ({ pic, wide: pic.width > pic.height * 1.15 }));
+  const narrowCount = cells.filter((c) => !c.wide).length;
+  if (narrowCount % 2 === 1 && cells[0]) cells[0].wide = true;
+  return { cells };
+}
 ---
 
-<Layout title={pageTitle}>
-    <Navigation />
+<Layout
+  title={`${product.name} | Bølgen Studio`}
+  description={lead}
+  image={ogImage}
+  ogType="product"
+  jsonLd={jsonLd}
+>
+  <main class="pt-[calc(var(--nav-h)+env(safe-area-inset-top))]" data-product data-color={firstGroup?.key}>
+    <div class="lg:grid lg:grid-cols-12">
+      <!-- Galleri: ét pr. farve, kun det valgte vises -->
+      <div class="lg:col-span-7 xl:col-span-8">
+        {
+          groups.map((group) => {
+            const { cells } = galleryCells(group.pics);
+            const isFirst = group === firstGroup;
+            return (
+              <div data-gallery={group.key} hidden={!isFirst}>
+                <ul class="gallery no-scrollbar">
+                  {cells.map(({ pic, wide }, i) => (
+                    <li class={wide ? "gallery-cell is-wide" : "gallery-cell"}>
+                      <img
+                        src={pic.src}
+                        srcset={pic.srcset}
+                        sizes={wide ? "(min-width: 1024px) 62vw, 86vw" : "(min-width: 1024px) 31vw, 86vw"}
+                        width={pic.width}
+                        height={pic.height}
+                        alt={pic.alt}
+                        loading={isFirst && i < 2 ? "eager" : "lazy"}
+                        fetchpriority={isFirst && i === 0 ? "high" : undefined}
+                        decoding="async"
+                        style={focusCrop(pic, 0.8) || undefined}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })
+        }
+      </div>
 
-    {/* Fixed Oceanic Background */}
-    <div class="fixed inset-0 pointer-events-none z-0 bg-[#000d12]">
-        <div
-            class="absolute top-[-10%] left-[20%] w-[60%] h-[60%] bg-cyan-400/5 blur-[150px] rounded-full"
-        >
+      <!-- Køb -->
+      <div class="lg:col-span-5 xl:col-span-4">
+        <div class="buy px-4 pb-16 pt-8 sm:px-6 lg:px-10 lg:pb-10 lg:pt-10">
+          <nav aria-label="Brødkrumme" class="label flex items-center gap-2">
+            <a href="/#shop" class="hover:text-ink">Shop</a>
+            <span aria-hidden="true">/</span>
+            <span class="text-ink" aria-current="page">{shortName}</span>
+          </nav>
+
+          <h1 class="display mt-4 text-[clamp(3.25rem,6vw,5rem)]">{product.name}</h1>
+          {product.subName && <p class="mt-2 text-ink-dim">{product.subName}</p>}
+
+          <p class="mt-5 flex items-baseline gap-3">
+            <span class="text-2xl font-semibold">{product.price}</span>
+            <span class="text-sm text-ink-mute">inkl. moms</span>
+          </p>
+
+          <p class="mt-6 text-ink-dim">{lead}</p>
+
+          <div class="mt-8 space-y-7">
+            {
+              product.hasColors && (
+                <div>
+                  <p class="label" id="color-label">
+                    Farve <span class="ml-2 !text-ink" data-color-name>{firstGroup?.color}</span>
+                  </p>
+                  <div class="mt-3 flex flex-wrap gap-2" role="radiogroup" aria-labelledby="color-label">
+                    {groups.map((group) => (
+                      <button
+                        type="button"
+                        role="radio"
+                        class="chip gap-2.5"
+                        aria-checked={group === firstGroup ? "true" : "false"}
+                        data-color-option={group.key}
+                        data-color-label={group.color}
+                      >
+                        <span class="swatch" style={`background:${group.swatch}`} />
+                        {group.color}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )
+            }
+
+            {
+              product.hasVariants && (
+                <div data-size-field>
+                  <div class="flex items-center justify-between">
+                    <p class="label" id="size-label">
+                      Størrelse <span class="size-name ml-2 !text-ink" data-size-name aria-live="polite" />
+                    </p>
+                    <button type="button" class="link text-sm text-ink-dim" data-size-guide-open aria-haspopup="dialog">
+                      Størrelsesguide
+                    </button>
+                  </div>
+                  {groups.map((group) => (
+                    <div
+                      class="mt-3 flex flex-wrap gap-2"
+                      role="radiogroup"
+                      aria-labelledby="size-label"
+                      data-sizes={group.key}
+                      hidden={group !== firstGroup}
+                    >
+                      {group.variants.map((variant) => (
+                        <button
+                          type="button"
+                          role="radio"
+                          class="chip min-w-[4rem]"
+                          aria-checked="false"
+                          data-variant-id={variant.id}
+                          data-size={variant.size}
+                          data-soldout={variant.available ? undefined : "true"}
+                          disabled={!variant.available}
+                          aria-label={variant.available ? variant.size : `${variant.size} (udsolgt)`}
+                        >
+                          {variant.size}
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )
+            }
+
+            <div>
+              <button
+                type="button"
+                class="btn btn-primary w-full !min-h-[3.75rem] text-base"
+                data-add-to-cart
+                disabled={!product.available}
+              >
+                <span data-add-label>{product.available ? "Læg i kurv" : product.hasVariants ? "Udsolgt" : "Kan ikke købes lige nu"}</span>
+                {product.available && <span class="opacity-60">{product.price}</span>}
+              </button>
+              {
+                !product.hasVariants && (
+                  <p class="mt-3 text-sm text-ink-mute">
+                    Shoppen svarer ikke lige nu. Prøv igen om lidt, eller <a href="/contact" class="link">skriv til os</a>.
+                  </p>
+                )
+              }
+            </div>
+
+            <p class="text-[0.9375rem] text-ink-dim">
+              Levering på 2–4 hverdage i Danmark. 14 dages returret. Du betaler sikkert gennem Stripe.
+            </p>
+          </div>
+
+          <div class="mt-10">
+            {
+              rest.length > 0 && (
+                <details class="acc" open>
+                  <summary>Om hoodien</summary>
+                  <div class="acc-body space-y-4">
+                    {rest.map((paragraph) => (
+                      <p>{paragraph}</p>
+                    ))}
+                  </div>
+                </details>
+              )
+            }
+            {
+              specs.length > 0 && (
+                <details class="acc">
+                  <summary>Materiale &amp; konstruktion</summary>
+                  <dl class="acc-body">
+                    {specs.map(([term, value]) => (
+                      <div class="flex justify-between gap-6 border-b py-2.5 hairline last:border-b-0">
+                        <dt class="text-ink-mute">{term}</dt>
+                        <dd class="text-right text-ink">{value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </details>
+              )
+            }
+            <details class="acc">
+              <summary>Fragt &amp; returnering</summary>
+              <div class="acc-body space-y-4">
+                <p>Levering i Danmark tager typisk 2–4 hverdage. Fragten beregnes ved kassen.</p>
+                <p>
+                  Du har 14 dage fra modtagelse til at returnere ubrugte, uvaskede varer i original emballage.
+                  <a href="/shipping" class="link text-ink">Læs mere om fragt og retur</a>.
+                </p>
+              </div>
+            </details>
+          </div>
         </div>
-        <div
-            class="absolute bottom-[20%] right-[10%] w-[50%] h-[50%] bg-blue-300/5 blur-[120px] rounded-full"
-        >
-        </div>
+      </div>
     </div>
 
-    <main class="relative z-10 min-h-screen min-h-[100dvh] pt-[max(4.5rem,env(safe-area-inset-top))] sm:pt-24 pb-14 sm:pb-24">
-        <div class="container mx-auto px-4 sm:px-6 max-w-6xl">
-            {/* Back to Archive Link */}
-            <div class="mb-8 sm:mb-12">
-                <a
-                    href="/#shop"
-                    class="group inline-flex items-center gap-4 py-2 px-1 -my-2 text-cyan-100/30 hover:text-cyan-100 transition-colors duration-500 text-sm tracking-[0.04em] font-light touch-manipulation min-h-[44px]"
-                >
-                    <svg
-                        width="24"
-                        height="1"
-                        viewBox="0 0 24 1"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="w-6 rotate-180 opacity-40 group-hover:opacity-100 group-hover:translate-x-[-4px] transition-all duration-500"
-                    >
-                        <line y1="0.5" x2="24" y2="0.5" stroke="currentColor"
-                        ></line>
-                    </svg>
-                    Tilbage til kollektion
+    {
+      otherProducts.length > 0 && (
+        <section class="wrap border-t py-16 hairline sm:py-24">
+          <h2 class="display text-5xl sm:text-6xl">Mere fra Bølgen</h2>
+          <div class="mt-8 grid gap-x-5 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+            {otherProducts.map((p) => {
+              const pic = p.colorGroups[0]?.pics[0];
+              return (
+                <a href={`/product/${p.handle}`} class="group block">
+                  <div class="aspect-[4/5] overflow-hidden bg-surface">
+                    {pic && (
+                      <img
+                        src={pic.src}
+                        srcset={pic.srcset}
+                        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                        alt={pic.alt}
+                        loading="lazy"
+                        decoding="async"
+                        class="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-[1.03]"
+                      />
+                    )}
+                  </div>
+                  <div class="mt-4 flex items-baseline justify-between gap-4">
+                    <h3 class="text-lg font-semibold group-hover:underline">{p.name}</h3>
+                    <p class="whitespace-nowrap">{p.price}</p>
+                  </div>
                 </a>
-            </div>
+              );
+            })}
+          </div>
+        </section>
+      )
+    }
 
-            <div
-                class="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-12 lg:gap-20 items-start"
-            >
-                {/* Gallery Section - images update when color changes */}
-                <div class="space-y-4 sm:space-y-6" id="gallery-section">
-                    <div class="relative">
-                        <div
-                            class="gallery-main aspect-[4/5] sm:aspect-[3/4] max-h-[62svh] sm:max-h-[70vh] min-h-[320px] sm:min-h-[280px] overflow-hidden bg-[#051117] rounded-2xl border border-white/5"
-                        >
-                            <img
-                                src={firstColorGroup.mainImage}
-                                alt={product.name}
-                                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                id="main-image"
-                            />
-                        </div>
-                        <button type="button" class="gallery-prev absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 z-30 w-11 h-11 sm:w-12 sm:h-12 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-black/55 hover:bg-black/70 text-white cursor-pointer touch-manipulation" aria-label="Forrige" id="gallery-prev-btn">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                        </button>
-                        <button type="button" class="gallery-next absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 z-30 w-11 h-11 sm:w-12 sm:h-12 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full bg-black/55 hover:bg-black/70 text-white cursor-pointer touch-manipulation" aria-label="Næste" id="gallery-next-btn">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                        </button>
-                    </div>
-
-                    <div class="grid grid-cols-4 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4" id="gallery-thumbnails">
-                        <div class="aspect-square sm:aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl" data-index="0">
-                            <img src={firstColorGroup.mainImage} alt={product.name + " forside"} class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-400 thumbnail-img" />
-                        </div>
-                        {firstColorGroup.gallery.map((img, i) => (
-                            <div class="aspect-square sm:aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl" data-index={i + 1}>
-                                <img src={img} alt={product.name + " detalje"} class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-400 thumbnail-img" />
-                            </div>
-                        ))}
-                        <div class="aspect-square sm:aspect-[3/4] overflow-hidden bg-[#051117] group cursor-pointer thumbnail border border-white/5 rounded-xl" data-index={firstColorGroup.gallery.length + 1}>
-                            <img src={firstColorGroup.backImage} alt={product.name + " bagside"} class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-all duration-400 thumbnail-img" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Info Section */}
-                <div class="lg:sticky lg:top-40 space-y-9 sm:space-y-12 product-info relative z-10">
-                    <div>
-                        <div class="flex items-center gap-4 mb-6">
-                            <span class="w-6 h-[2px] rounded-full bg-cyan-700/50"></span>
-                            <span class="text-cyan-500/50 text-xs tracking-[0.08em] font-light">
-                                Produktdetaljer
-                            </span>
-                        </div>
-                        <h1 class="text-white text-2xl sm:text-4xl lg:text-6xl font-light tracking-[0.02em] mb-3 sm:mb-4 leading-tight">
-                            {product.name}
-                        </h1>
-                        {displaySubName && <p class="text-white/40 text-base tracking-[0.04em] mb-8 font-light">{displaySubName}</p>}
-                        {/* Stock Marker - shows availability for selected color/size */}
-                        {hasVariants && firstAvailableVariant && (
-                            <div
-                                id="stock-marker"
-                                class={"flex items-center gap-3 py-2 px-4 rounded-full w-fit border " + stockMarkerBorder}
-                            >
-                                <span
-                                    id="stock-marker-dot"
-                                    class={"w-1.5 h-1.5 rounded-full " + stockMarkerDot}
-                                ></span>
-                                <span
-                                    id="stock-marker-text"
-                                    class={"text-xs tracking-[0.04em] font-light " + stockMarkerTextClass}
-                                >
-                                    {stockMarkerLabel}
-                                </span>
-                            </div>
-                        )}
-                    </div>
-
-                    <div class="space-y-6">
-                        <div class="max-w-md">
-                            <div class="text-white/80 text-base leading-relaxed font-light tracking-wide">
-                                <span id="product-description-text">{descriptionIsLong ? descriptionPreview : descriptionFull}</span>
-                                {descriptionIsLong && (
-                                    <button
-                                        type="button"
-                                        id="product-description-toggle"
-                                        class="description-expand-btn inline p-0 ml-0.5 border-0 bg-transparent text-cyan-400/70 hover:text-cyan-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40 rounded-sm font-light tracking-wide align-baseline cursor-pointer touch-manipulation min-h-[44px] px-1 -my-2 py-2"
-                                        aria-expanded="false"
-                                        aria-controls="product-description-text"
-                                    >
-                                        …
-                                    </button>
-                                )}
-                            </div>
-                            {descriptionIsLong && (
-                                <template id="product-description-full">{descriptionFull}</template>
-                            )}
-                        </div>
-                        <p
-                            class="text-white text-3xl font-light tracking-wide mt-8"
-                        >
-                            {product.price}
-                        </p>
-                    </div>
-
-                    <div class="space-y-10 relative z-10">
-                        {/* Color selector - shown first when product has multiple colors */}
-                        {hasColors && (
-                            <div class="space-y-4">
-                                <span class="text-white/50 text-[10px] tracking-[0.08em] block font-light">Vælg farve</span>
-                                <div class="flex gap-2.5 sm:gap-3 flex-wrap" id="color-buttons-container">
-                                    {colorGroups.map((cg) => (
-                                        <button
-                                            type="button"
-                                            class="color-btn min-h-[44px] px-4 sm:px-5 border border-white/10 text-[11px] tracking-wide transition-all duration-500 rounded-xl bg-white/[0.02] touch-manipulation cursor-pointer select-none text-white/60 hover:border-cyan-500/60 hover:text-white active:scale-95"
-                                            data-color={cg.color}
-                                            data-main-image={cg.mainImage}
-                                            data-back-image={cg.backImage}
-                                            data-gallery={JSON.stringify(cg.gallery)}
-                                            data-variants={JSON.stringify(cg.variants)}
-                                            data-selected={cg.color === firstColorGroup.color ? "true" : undefined}
-                                        >
-                                            {cg.color}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Size selector - shown after/below color */}
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-end max-w-xs">
-                                <span class="text-white/50 text-[10px] tracking-[0.08em] block font-light">Vælg størrelse</span>
-                                <button
-                                    type="button"
-                                    class="size-guide-trigger text-cyan-400/60 hover:text-cyan-400 text-sm tracking-[0.04em] font-light transition-colors border-b border-cyan-500/20 min-h-[44px] touch-manipulation"
-                                    aria-haspopup="dialog"
-                                    aria-controls="size-guide-dialog"
-                                >
-                                    Størrelsesguide
-                                </button>
-                            </div>
-
-                            <div class="flex gap-2.5 sm:gap-4 flex-wrap" id="size-buttons-container">
-                                {(firstColorGroup.variants.length > 0 ? (
-                                    firstColorGroup.variants.map((v) => (
-                                        <button
-                                            type="button"
-                                            class={`size-btn w-12 h-12 min-w-[48px] min-h-[48px] border border-white/10 text-[10px] tracking-wide transition-all duration-500 rounded-xl bg-white/[0.02] touch-manipulation cursor-pointer select-none ${v.availableForSale ? "text-white/40 hover:border-cyan-500/60 hover:text-white active:scale-95" : "text-white/20 opacity-50 line-through"}`}
-                                            data-variant-id={v.id}
-                                            data-variant-title={v.title}
-                                            data-available={String(v.availableForSale)}
-                                            data-quantity-available={v.quantityAvailable ?? ""}
-                                            tabindex="0"
-                                        >
-                                            {v.size ?? v.title}
-                                        </button>
-                                    ))
-                                ) : product.variants.length > 0 ? (
-                                    product.variants.map((v) => (
-                                        <button
-                                            type="button"
-                                            class={`size-btn w-12 h-12 min-w-[48px] min-h-[48px] border border-white/10 text-[10px] tracking-wide transition-all duration-500 rounded-xl bg-white/[0.02] touch-manipulation cursor-pointer select-none ${v.availableForSale ? "text-white/40 hover:border-cyan-500/60 hover:text-white active:scale-95" : "text-white/20 opacity-50 line-through"}`}
-                                            data-variant-id={v.id}
-                                            data-variant-title={v.title}
-                                            data-available={String(v.availableForSale)}
-                                            data-quantity-available={v.quantityAvailable ?? ""}
-                                            tabindex="0"
-                                        >
-                                            {v.size ?? v.title}
-                                        </button>
-                                    ))
-                                ) : (
-                                    <p class="text-white/40 text-sm font-light italic">Ingen størrelser tilgængelige</p>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div class="space-y-4">
-                            <button
-                                class="add-to-cart-btn w-full py-4 sm:py-6 min-h-[48px] border border-white/20 rounded-2xl text-white text-sm tracking-[0.04em] font-light relative group overflow-hidden transition-all duration-500 hover:border-cyan-400/40 touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-white/20"
-                                disabled={product.variants.length === 0}
-                            >
-                                <div
-                                    class="absolute inset-0 bg-white/[0.03] group-hover:bg-cyan-400/10 transition-colors duration-500"
-                                >
-                                </div>
-                                <span class="relative z-10 font-light"
-                                    >Tilføj til kurv</span
-                                >
-                                <div
-                                    class="absolute bottom-0 left-0 w-0 h-[1px] bg-cyan-400/60 group-hover:w-full transition-all duration-500"
-                                >
-                                </div>
-                            </button>
-                            <p
-                                class="text-xs text-white/40 tracking-[0.04em] font-light text-center italic"
-                            >
-                                Inkluderer eksklusiv studiopakning
-                            </p>
-
-                            {/* Trust Bar */}
-                            <div
-                                class="pt-6 flex flex-wrap justify-center items-center gap-4 sm:gap-8 opacity-25 group-hover:opacity-40 transition-opacity duration-500"
-                            >
-                                <div class="flex items-center gap-2">
-                                    <svg
-                                        class="w-3 h-3"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                        ><path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="1.5"
-                                            d="M5 13l4 4L19 7"></path></svg
-                                    >
-                                    <span
-                                        class="text-[10px] tracking-[0.06em] "
-                                        >Global prioritering</span
-                                    >
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <svg
-                                        class="w-3 h-3"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                        ><path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            stroke-width="1.5"
-                                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 00-2 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                                        ></path></svg
-                                    >
-                                    <span
-                                        class="text-[10px] tracking-[0.06em] "
-                                        >Sikker betaling</span
-                                    >
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="pt-12 space-y-0">
-                        <div
-                            class="accordion group border-t border-white/15 overflow-hidden"
-                        >
-                            <button
-                                type="button"
-                                class="accordion-trigger w-full flex justify-between items-center py-5 sm:py-6 min-h-[48px] cursor-pointer text-left bg-transparent border-none touch-manipulation"
-                            >
-                                <span
-                                    class="text-white/80 text-xs tracking-[0.1em] font-light"
-                                    >Specifikationer</span
-                                >
-                                <span
-                                    class="accordion-icon text-white/40 transition-transform duration-300"
-                                    >+</span
-                                >
-                            </button>
-                            <div class="accordion-content">
-                                <div class="pb-8 space-y-4">
-                                <p
-                                    class="text-white/60 text-sm leading-relaxed font-light tracking-wide"
-                                >
-                                    Tung bomuld. Skræddersyet
-                                    silhuet designet i vores studio. Med
-                                    broderet kaligrafi.
-                                </p>
-                                <div class="grid grid-cols-2 gap-4 pt-4">
-                                    <div>
-                                        <span
-                                            class="block text-xs text-white/40 tracking-wide mb-1"
-                                            >Stof</span
-                                        >
-                                        <span
-                                            class="text-sm text-white/80 tracking-wide"
-                                            >100% bomuld</span
-                                        >
-                                    </div>
-                                    
-                                </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div
-                            class="accordion group border-t border-white/15 overflow-hidden"
-                        >
-                            <button
-                                type="button"
-                                class="accordion-trigger w-full flex justify-between items-center py-5 sm:py-6 min-h-[48px] cursor-pointer text-left bg-transparent border-none touch-manipulation"
-                            >
-                                <span
-                                    class="text-white/80 text-xs tracking-[0.1em] font-light"
-                                    >Fragt & returnering</span
-                                >
-                                <span
-                                    class="accordion-icon text-white/40 transition-transform duration-300"
-                                    >+</span
-                                >
-                            </button>
-                            <div class="accordion-content">
-                                <div class="pb-8">
-                                <p
-                                    class="text-white/60 text-sm leading-relaxed font-light tracking-wide"
-                                >
-                                    Levering tager typisk 2-4 hverdage. 14
-                                    dages returret.
-                                </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        
-                    </div>
-                </div>
-            </div>
-
-            {/* Other Pieces Section */}
-            {
-                otherProducts.length > 0 && (
-                    <div class="mt-20 sm:mt-32">
-                        <div class="flex items-center gap-6 mb-10 sm:mb-16">
-                            <div class="h-[2px] w-10 rounded-full bg-cyan-500/20" />
-                            <h2 class="text-white/40 text-sm tracking-[0.08em] font-light">
-                                Se flere stykker
-                            </h2>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12">
-                            {otherProducts.map((p) => (
-                                <a
-                                    href={`/product/${p.handle}`}
-                                    class="group relative block overflow-hidden"
-                                >
-                                    <div class="aspect-[4/5] sm:aspect-[16/9] overflow-hidden bg-[#051117] rounded-2xl border border-white/5 relative">
-                                        <img
-                                            src={p.mainImage}
-                                            alt={p.name}
-                                            class="w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500 ease-out"
-                                        />
-                                        <div class="absolute inset-x-4 sm:inset-x-8 bottom-4 sm:bottom-8 flex justify-between items-end z-20">
-                                            <div>
-                                                <span class="text-xs text-cyan-400/60 tracking-[0.06em] block mb-2 font-light">
-                                                    {p.subName}
-                                                </span>
-                                                <h3 class="text-white text-xl sm:text-2xl font-light tracking-wide">
-                                                    {p.name}
-                                                </h3>
-                                            </div>
-                                            <span class="text-white/40 text-sm tracking-wide mb-1 underline underline-offset-8 font-light">
-                                                Se mere
-                                            </span>
-                                        </div>
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60" />
-                                    </div>
-                                </a>
-                            ))}
-                        </div>
-                    </div>
-                )
-            }
+    <!-- Fast købsbjælke på mobil, når knappen er rullet ud af syne -->
+    {
+      product.available && (
+        <div class="buybar" data-buybar aria-hidden="true">
+          <div class="min-w-0 flex-1">
+            <p class="truncate text-[0.9375rem] font-semibold">{product.name}</p>
+            <p class="label mt-1.5" data-buybar-summary>
+              {product.price}
+            </p>
+          </div>
+          <button type="button" class="btn btn-primary !min-h-[3rem] shrink-0 px-6" data-buybar-button tabindex="-1">
+            Læg i kurv
+          </button>
         </div>
+      )
+    }
 
-        <dialog id="size-guide-dialog" class="size-guide-dialog">
-            <div class="flex max-h-[min(85dvh,28rem)] flex-col">
-                <div class="flex shrink-0 items-center justify-between gap-4 border-b border-white/10 px-4 py-3 sm:px-5">
-                    <h2 class="text-base font-light tracking-[0.04em] text-white">Størrelsesguide</h2>
-                    <button
-                        type="button"
-                        class="size-guide-close text-white/50 hover:text-white text-sm tracking-[0.04em] font-light min-h-[44px] min-w-[44px] px-2 touch-manipulation"
-                    >
-                        Luk
-                    </button>
-                </div>
-                <div class="overflow-x-auto overflow-y-auto px-4 py-4 sm:px-5">
-                    <table class="w-full min-w-[280px] text-left border-collapse text-[12px]">
-                        <thead>
-                            <tr class="border-b border-white/10">
-                                <th class="py-2.5 pr-3 text-white/45 text-[10px] tracking-[0.08em] font-light">Størrelse</th>
-                                <th class="py-2.5 pr-3 text-white/45 text-[10px] tracking-[0.08em] font-light">Længde</th>
-                                <th class="py-2.5 pr-3 text-white/45 text-[10px] tracking-[0.08em] font-light">Bryst</th>
-                                <th class="py-2.5 text-white/45 text-[10px] tracking-[0.08em] font-light">Ærme</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sizeChart.map((row, i) => (
-                                <tr class={i < sizeChart.length - 1 ? "border-b border-white/5" : ""}>
-                                    <td class="py-2.5 pr-3 text-white">{row.size}</td>
-                                    <td class="py-2.5 pr-3 text-white/60 whitespace-nowrap">{row.length}</td>
-                                    <td class="py-2.5 pr-3 text-white/60 whitespace-nowrap">{row.chest}</td>
-                                    <td class="py-2.5 text-white/60 whitespace-nowrap">{row.sleeve}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </dialog>
-    </main>
+    <dialog id="size-guide" class="size-guide" aria-labelledby="size-guide-title">
+      <div class="flex items-center justify-between border-b px-5 py-4 hairline">
+        <h2 id="size-guide-title" class="text-lg font-semibold">Størrelsesguide</h2>
+        <button type="button" class="link -mr-2 min-h-[2.75rem] px-2 text-[0.9375rem]" data-size-guide-close>Luk</button>
+      </div>
+      <div class="px-5 py-5">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="border-b hairline">
+              <th class="label py-3 font-normal" scope="col">Størrelse</th>
+              <th class="label py-3 font-normal" scope="col">Længde</th>
+              <th class="label py-3 font-normal" scope="col">Bryst</th>
+              <th class="label py-3 font-normal" scope="col">Ærme</th>
+            </tr>
+          </thead>
+          <tbody class="text-[0.9375rem]">
+            {
+              SIZE_CHART_ROWS.map((row) => (
+                <tr class="border-b hairline last:border-b-0">
+                  <th class="py-3.5 font-medium text-ink" scope="row">{row.size}</th>
+                  <td class="py-3.5 text-ink-dim">{row.length}</td>
+                  <td class="py-3.5 text-ink-dim">{row.chest}</td>
+                  <td class="py-3.5 text-ink-dim">{row.sleeve}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+        <p class="mt-4 text-sm text-ink-mute">
+          Alle mål er taget fladt. Hoodien er lavet til at sidde en smule cropped.
+        </p>
+      </div>
+    </dialog>
+  </main>
+
+  <!-- Vælg farven fra URL'en før første tegning, så siden ikke blinker -->
+  <script is:inline>
+    (function () {
+      var root = document.querySelector("[data-product]");
+      var wanted = (new URLSearchParams(location.search).get("color") || "").toLowerCase();
+      if (!root) return;
+      // Uden gyldig farve i URL'en bruges den farve, siden er bygget med
+      if (!/^[a-z0-9-]+$/.test(wanted) || !root.querySelector('[data-gallery="' + wanted + '"]')) {
+        wanted = root.dataset.color || "";
+      }
+      if (!wanted) return;
+      root.dataset.color = wanted;
+      // Siden tager hoodiens farve: hvid bomuld eller sort
+      if (wanted === "hvid" || wanted === "sort") document.documentElement.dataset.theme = wanted;
+      root.querySelectorAll("[data-gallery], [data-sizes]").forEach(function (el) {
+        el.hidden = (el.dataset.gallery || el.dataset.sizes) !== wanted;
+      });
+      // Farveknappen og farvenavnet skal også passe fra første tegning
+      root.querySelectorAll("[data-color-option]").forEach(function (option) {
+        var active = option.dataset.colorOption === wanted;
+        option.setAttribute("aria-checked", String(active));
+        var name = root.querySelector("[data-color-name]");
+        if (active && name) name.textContent = option.dataset.colorLabel || "";
+      });
+    })();
+  </script>
 </Layout>
 
 <script>
-    import gsap from "gsap";
+  import { addLine, openCart, toast } from "../../lib/cart";
 
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const root = document.querySelector<HTMLElement>("[data-product]");
+  const addButton = document.querySelector<HTMLButtonElement>("[data-add-to-cart]");
+  const addLabel = document.querySelector<HTMLElement>("[data-add-label]");
+  const sizeField = document.querySelector<HTMLElement>("[data-size-field]");
+  const sizeName = document.querySelector<HTMLElement>("[data-size-name]");
+  const colorName = document.querySelector<HTMLElement>("[data-color-name]");
+  const buybar = document.querySelector<HTMLElement>("[data-buybar]");
+  const buybarButton = document.querySelector<HTMLButtonElement>("[data-buybar-button]");
+  const buybarSummary = document.querySelector<HTMLElement>("[data-buybar-summary]");
+  const basePrice = buybarSummary?.textContent?.trim() ?? "";
 
-    function normalizeColorValue(value: string): string {
-        return value
-            .normalize("NFKD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .toLowerCase();
+  let variantId: string | null = null;
+  let busy = false;
+
+  const sizeChips = (colorKey?: string) =>
+    Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        colorKey ? `[data-sizes="${colorKey}"] [data-variant-id]` : "[data-variant-id]"
+      )
+    );
+
+  function refresh() {
+    const picked = sizeChips().find((chip) => chip.getAttribute("aria-checked") === "true");
+    variantId = picked?.dataset.variantId ?? null;
+    const size = picked?.dataset.size ?? "";
+    if (sizeName && (variantId || !sizeName.dataset.missing)) {
+      sizeName.textContent = size;
+      delete sizeName.dataset.missing;
     }
 
-    function syncColorInUrl(color: string) {
-        const url = new URL(window.location.href);
-        url.searchParams.set("color", color);
-        window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    const label = busy ? "Lægger i kurv…" : variantId ? "Læg i kurv" : "Vælg størrelse";
+    if (addLabel && addButton && !addButton.disabled) addLabel.textContent = label;
+    if (buybarButton) buybarButton.textContent = label;
+    if (buybarSummary) {
+      buybarSummary.textContent = [colorName?.textContent, size, basePrice].filter(Boolean).join(", ");
     }
+  }
 
-    // Initial animation
-    if (!reduceMotion) {
-        gsap.from(".product-info > *", {
-            y: 30,
-            opacity: 0,
-            duration: 2,
-            stagger: 0.15,
-            ease: "expo.out",
-            delay: 0.3,
-        });
-    }
+  function selectSize(chip: HTMLButtonElement | null) {
+    sizeChips().forEach((c) => c.setAttribute("aria-checked", String(c === chip)));
+    refresh();
+  }
 
-    // Stock marker: updates when user selects a different size or color
-    function updateStockMarker() {
-        const marker = document.getElementById("stock-marker");
-        const dot = document.getElementById("stock-marker-dot");
-        const text = document.getElementById("stock-marker-text");
-        if (!marker || !dot || !text) return;
-        const selectedBtn = document.querySelector<HTMLButtonElement>(".size-btn[data-selected='true']");
-        if (!selectedBtn) return;
-        const available = selectedBtn.dataset.available === "true";
-        const qty = selectedBtn.dataset.quantityAvailable ? parseInt(selectedBtn.dataset.quantityAvailable, 10) : null;
-        const isLimited = available && qty != null && qty <= 5;
-        text.textContent = available ? (qty != null ? `${qty} tilbage` : "På lager") : "Udsolgt";
-        marker.className = `flex items-center gap-3 py-2 px-4 rounded-full w-fit border ${
-            available ? (isLimited ? "bg-amber-950/20 border-amber-900/20" : "bg-emerald-950/20 border-emerald-900/20") : "bg-red-950/20 border-red-900/20"
-        }`;
-        dot.className = `w-1.5 h-1.5 rounded-full ${
-            available ? (isLimited ? "bg-amber-500" : "bg-emerald-500") : "bg-red-500 animate-pulse"
-        }`;
-        text.className = `text-xs tracking-[0.04em] font-light ${
-            available ? (isLimited ? "text-amber-400" : "text-emerald-400") : "text-red-400"
-        }`;
-    }
+  function selectColor(key: string, updateUrl: boolean) {
+    if (!root || !document.querySelector(`[data-gallery="${key}"]`)) return;
+    const previousSize = sizeChips().find((c) => c.getAttribute("aria-checked") === "true")?.dataset.size;
 
-    // Gallery: prev/next chevrons and thumbnails; color switch updates images
-    function getImageUrls(): string[] {
-        const mainImg = document.getElementById("main-image") as HTMLImageElement | null;
-        const thumbs = document.querySelectorAll("#gallery-thumbnails .thumbnail-img");
-        if (!mainImg || thumbs.length === 0) return [];
-        return Array.from(thumbs).map((img) => (img as HTMLImageElement).src);
-    }
-
-    function initGallery() {
-        const mainImg = document.getElementById("main-image") as HTMLImageElement | null;
-        const thumbnails = document.querySelectorAll("#gallery-thumbnails .thumbnail");
-        let currentIndex = 0;
-
-        if (!mainImg || thumbnails.length === 0) return;
-
-        function showImage(index: number) {
-            const imageUrls = getImageUrls();
-            if (imageUrls.length === 0) return;
-            currentIndex = ((index % imageUrls.length) + imageUrls.length) % imageUrls.length;
-            const newSrc = imageUrls[currentIndex];
-            if (mainImg.src === newSrc) return;
-            if (reduceMotion) {
-                mainImg.src = newSrc;
-            } else {
-                gsap.to(mainImg, {
-                    opacity: 0,
-                    scale: 0.98,
-                    duration: 0.35,
-                    ease: "power2.inOut",
-                    onComplete: () => {
-                        mainImg.src = newSrc;
-                        gsap.to(mainImg, {
-                            opacity: 1,
-                            scale: 1,
-                            duration: 0.5,
-                            ease: "expo.out",
-                        });
-                    },
-                });
-            }
-            thumbnails.forEach((t, i) => {
-                const el = t as HTMLElement;
-                el.classList.toggle("ring-2", i === currentIndex);
-                el.classList.toggle("ring-cyan-400/60", i === currentIndex);
-            });
-        }
-
-        thumbnails.forEach((thumb, i) => {
-            (thumb as HTMLElement).addEventListener("click", () => showImage(i));
-        });
-
-        const prevBtn = document.getElementById("gallery-prev-btn");
-        const nextBtn = document.getElementById("gallery-next-btn");
-        prevBtn?.addEventListener("click", (e) => { e.preventDefault(); showImage(currentIndex - 1); });
-        nextBtn?.addEventListener("click", (e) => { e.preventDefault(); showImage(currentIndex + 1); });
-
-        thumbnails.forEach((t, i) => {
-            const el = t as HTMLElement;
-            el.classList.toggle("ring-2", i === 0);
-            el.classList.toggle("ring-cyan-400/60", i === 0);
-        });
-    }
-
-    // Color selection: update gallery images and size buttons
-    function initColorSwitcher() {
-        const colorBtns = document.querySelectorAll(".color-btn");
-        const mainImg = document.getElementById("main-image") as HTMLImageElement | null;
-        const galleryThumbs = document.getElementById("gallery-thumbnails");
-        const sizeContainer = document.getElementById("size-buttons-container");
-
-        function selectColor(el: HTMLButtonElement, options?: { syncUrl?: boolean }) {
-            const syncUrl = options?.syncUrl ?? true;
-            const mainImage = el.dataset.mainImage ?? "";
-            const backImage = el.dataset.backImage ?? "";
-            const gallery = JSON.parse(el.dataset.gallery ?? "[]") as string[];
-            const variants = JSON.parse(el.dataset.variants ?? "[]") as { id: string; title: string; size?: string; availableForSale: boolean; quantityAvailable?: number | null }[];
-
-            document.querySelectorAll(".color-btn").forEach((b) => b.removeAttribute("data-selected"));
-            el.setAttribute("data-selected", "true");
-
-            // Update main image and thumbnails
-            if (mainImg) {
-                if (reduceMotion) {
-                    mainImg.src = mainImage;
-                } else {
-                    gsap.to(mainImg, { opacity: 0, duration: 0.25, onComplete: () => {
-                        mainImg.src = mainImage;
-                        gsap.to(mainImg, { opacity: 1, duration: 0.4 });
-                    }});
-                }
-            }
-
-            if (galleryThumbs) {
-                const thumbImgs = galleryThumbs.querySelectorAll(".thumbnail-img");
-                const urls = [mainImage, ...gallery, backImage];
-                thumbImgs.forEach((img, i) => {
-                    const src = urls[i];
-                    if (src && (img as HTMLImageElement).src !== src) (img as HTMLImageElement).src = src;
-                });
-            }
-
-            // Replace size buttons
-            if (sizeContainer && variants.length > 0) {
-                sizeContainer.innerHTML = variants.map((v) => `
-                        <button type="button" class="size-btn w-12 h-12 min-w-[48px] min-h-[48px] border border-white/10 text-[10px] tracking-wide transition-all duration-500 rounded-xl bg-white/[0.02] touch-manipulation cursor-pointer select-none ${v.availableForSale ? "text-white/40 hover:border-cyan-500/60 hover:text-white active:scale-95" : "text-white/20 opacity-50 line-through"}"
-                            data-variant-id="${v.id}" data-variant-title="${v.title}" data-available="${v.availableForSale}" data-quantity-available="${v.quantityAvailable ?? ""}">
-                            ${v.size ?? v.title}
-                        </button>
-                    `).join("");
-                const firstAvail = sizeContainer.querySelector<HTMLButtonElement>(".size-btn[data-available='true']") ?? sizeContainer.querySelector<HTMLButtonElement>(".size-btn");
-                if (firstAvail) firstAvail.setAttribute("data-selected", "true");
-                updateStockMarker();
-            }
-
-            if (syncUrl) {
-                syncColorInUrl(el.dataset.color ?? "");
-            }
-        }
-
-        colorBtns.forEach((btn) => {
-            btn.addEventListener("click", () => {
-                selectColor(btn as HTMLButtonElement);
-            });
-        });
-
-        const requestedColor = new URL(window.location.href).searchParams.get("color");
-        if (!requestedColor) return;
-
-        const matchingBtn = Array.from(colorBtns).find((btn) => {
-            const color = (btn as HTMLButtonElement).dataset.color ?? "";
-            return normalizeColorValue(color) === normalizeColorValue(requestedColor);
-        });
-
-        if (matchingBtn) {
-            selectColor(matchingBtn as HTMLButtonElement, { syncUrl: false });
-        }
-    }
-    function initSizeSelection() {
-        const sizeContainer = document.getElementById("size-buttons-container");
-        if (!sizeContainer) return;
-
-        // Prevent duplicate listeners when Astro re-runs page scripts on navigation.
-        if (!sizeContainer.hasAttribute("data-size-listener-initialized")) {
-            sizeContainer.addEventListener("click", (e) => {
-                const btn = (e.target as Element).closest<HTMLButtonElement>(".size-btn");
-                if (!btn) return;
-                sizeContainer.querySelectorAll(".size-btn").forEach((b) => b.removeAttribute("data-selected"));
-                btn.setAttribute("data-selected", "true");
-                updateStockMarker();
-            });
-            sizeContainer.setAttribute("data-size-listener-initialized", "true");
-        }
-
-        if (!sizeContainer.querySelector(".size-btn[data-selected='true']")) {
-            const firstAvailable =
-                sizeContainer.querySelector<HTMLButtonElement>(".size-btn[data-available='true']") ??
-                sizeContainer.querySelector<HTMLButtonElement>(".size-btn");
-            if (firstAvailable) {
-                firstAvailable.setAttribute("data-selected", "true");
-            }
-        }
-    }
-
-    function initDescriptionToggle() {
-        const textSpan = document.getElementById("product-description-text");
-        const btn = document.getElementById("product-description-toggle") as HTMLButtonElement | null;
-        const tmpl = document.getElementById("product-description-full") as HTMLTemplateElement | null;
-        if (!textSpan || !btn || !tmpl || btn.dataset.descToggleInit === "true") return;
-        btn.dataset.descToggleInit = "true";
-        // <template> contents live in .content; tmpl.textContent is empty in browsers.
-        const fullText = (tmpl.content.textContent ?? "").trim();
-        const previewText = (textSpan.textContent ?? "").trim();
-        let expanded = false;
-        btn.addEventListener("click", () => {
-            expanded = !expanded;
-            textSpan.textContent = expanded ? fullText : previewText;
-            btn.textContent = expanded ? "Vis mindre" : "…";
-            btn.setAttribute("aria-expanded", expanded ? "true" : "false");
-            btn.classList.toggle("inline", !expanded);
-            btn.classList.toggle("ml-0.5", !expanded);
-            btn.classList.toggle("align-baseline", !expanded);
-            btn.classList.toggle("block", expanded);
-            btn.classList.toggle("mt-2", expanded);
-            btn.classList.toggle("text-left", expanded);
-        });
-    }
-
-    function runInit() {
-        initGallery();
-        initColorSwitcher();
-        initSizeSelection();
-        initDescriptionToggle();
-        updateStockMarker();
-    }
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", runInit);
+    root.dataset.color = key;
+    // Siden tager hoodiens farve: hvid bomuld eller sort
+    if (key === "hvid" || key === "sort") {
+      if (updateUrl) document.documentElement.classList.add("theme-fade");
+      document.documentElement.dataset.theme = key;
     } else {
-        runInit();
+      delete document.documentElement.dataset.theme;
     }
-    document.addEventListener("astro:page-load", runInit);
-
-    // Add to Collection: add variant to Shopify cart
-    const addToCartBtn = document.querySelector<HTMLButtonElement>(".add-to-cart-btn");
-    addToCartBtn?.addEventListener("click", async () => {
-        const selectedSizeBtn = document.querySelector<HTMLButtonElement>(".size-btn[data-selected='true']");
-        const variantId = selectedSizeBtn?.dataset.variantId;
-        const isAvailable = selectedSizeBtn?.dataset.available === "true";
-
-        if (!variantId) {
-            alert("Vælg venligst en størrelse.");
-            return;
-        }
-        if (!isAvailable) {
-            alert("Denne størrelse er udsolgt.");
-            return;
-        }
-
-        addToCartBtn.disabled = true;
-        const originalText = addToCartBtn.querySelector("span")?.textContent ?? "Tilføj til kurv";
-        addToCartBtn.querySelector("span")!.textContent = "Tilføjer...";
-
-        try {
-            const { addVariantToCart } = await import("../../lib/cart-client");
-            await addVariantToCart(variantId, 1);
-            if ((window as any).openCart) (window as any).openCart();
-        } catch (err) {
-            console.error("Add to cart failed:", err);
-            alert("Kunne ikke tilføje til kurv. Prøv igen.");
-        } finally {
-            addToCartBtn.disabled = false;
-            addToCartBtn.querySelector("span")!.textContent = originalText;
-        }
+    document.querySelectorAll<HTMLElement>("[data-gallery], [data-sizes]").forEach((el) => {
+      el.hidden = (el.dataset.gallery ?? el.dataset.sizes) !== key;
     });
-
-    // Size guide: native <dialog> (top layer; Escape + scroll lock without body hacks)
-    const sizeGuideDialog = document.getElementById("size-guide-dialog") as HTMLDialogElement | null;
-    const sizeGuideTrigger = document.querySelector(".size-guide-trigger");
-    const sizeGuideClose = sizeGuideDialog?.querySelector(".size-guide-close");
-
-    sizeGuideTrigger?.addEventListener("click", () => sizeGuideDialog?.showModal());
-    sizeGuideClose?.addEventListener("click", () => sizeGuideDialog?.close());
-    sizeGuideDialog?.addEventListener("click", (e) => {
-        if (e.target === sizeGuideDialog) sizeGuideDialog.close();
+    document.querySelectorAll<HTMLElement>("[data-color-option]").forEach((option) => {
+      const active = option.dataset.colorOption === key;
+      option.setAttribute("aria-checked", String(active));
+      if (active && colorName) colorName.textContent = option.dataset.colorLabel ?? "";
     });
+    document.querySelector<HTMLElement>(`[data-gallery="${key}"] .gallery`)?.scrollTo({ left: 0 });
 
-    // Accordion toggle - use event delegation so it works with View Transitions
-    document.addEventListener("click", (e) => {
-        const trigger = (e.target as Element).closest(".accordion-trigger");
-        if (trigger) {
-            e.preventDefault();
-            const accordion = trigger.closest(".accordion");
-            accordion?.classList.toggle("open");
-        }
+    // Behold den valgte størrelse, hvis den findes i den nye farve
+    const same = sizeChips(key).find((c) => c.dataset.size === previousSize && !c.disabled) ?? null;
+    selectSize(same);
+
+    if (updateUrl) {
+      const url = new URL(window.location.href);
+      url.searchParams.set("color", key);
+      window.history.replaceState({}, "", url);
+    }
+  }
+
+  async function add() {
+    if (busy || !addButton || addButton.disabled) return;
+    if (!variantId) {
+      // Beskeden står i etiketten ved siden af "Størrelse", så intet på siden flytter sig
+      if (sizeName) {
+        sizeName.dataset.missing = "true";
+        sizeName.textContent = "Vælg en størrelse først";
+      }
+      // Rul kun, hvis størrelserne ikke allerede kan ses
+      const rect = sizeField?.getBoundingClientRect();
+      if (rect && (rect.top < 80 || rect.bottom > window.innerHeight - 80)) {
+        sizeField?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      sizeChips(root?.dataset.color)
+        .find((c) => !c.disabled)
+        ?.focus({ preventScroll: true });
+      return;
+    }
+    busy = true;
+    refresh();
+    try {
+      await addLine(variantId, 1);
+      openCart();
+    } catch (err) {
+      console.error("[læg i kurv]", err);
+      toast("Varen kunne ikke lægges i kurven. Prøv igen.", "error");
+    } finally {
+      busy = false;
+      refresh();
+    }
+  }
+
+  document.querySelectorAll<HTMLButtonElement>("[data-color-option]").forEach((option) => {
+    option.addEventListener("click", () => selectColor(option.dataset.colorOption ?? "", true));
+  });
+  sizeChips().forEach((chip) => chip.addEventListener("click", () => selectSize(chip)));
+  addButton?.addEventListener("click", add);
+  buybarButton?.addEventListener("click", add);
+
+  // Synkronisér med farven, som inline-scriptet allerede har valgt ud fra URL'en
+  if (root?.dataset.color) selectColor(root.dataset.color, false);
+  else refresh();
+
+  // Har farven kun én størrelse på lager, er valget givet
+  const only = sizeChips(root?.dataset.color).filter((c) => !c.disabled);
+  if (only.length === 1 && sizeChips(root?.dataset.color).length === 1) selectSize(only[0]);
+
+  if (buybar && addButton && "IntersectionObserver" in window) {
+    new IntersectionObserver(([entry]) => {
+      const show = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+      buybar.classList.toggle("is-in", show);
+      buybar.setAttribute("aria-hidden", String(!show));
+      buybarButton?.setAttribute("tabindex", show ? "0" : "-1");
+    }).observe(addButton);
+  }
+
+  // Hent den anden farves første billeder i baggrunden, så farveskift ikke starter med tomme felter
+  const warmUp = () => {
+    document.querySelectorAll<HTMLElement>("[data-gallery][hidden]").forEach((gallery) => {
+      Array.from(gallery.querySelectorAll<HTMLImageElement>("img[loading='lazy']"))
+        .slice(0, 3)
+        .forEach((img) => {
+          img.loading = "eager";
+        });
     });
+  };
+  if ("requestIdleCallback" in window) requestIdleCallback(warmUp, { timeout: 3000 });
+  else setTimeout(warmUp, 1500);
+
+  const sizeGuide = document.getElementById("size-guide") as HTMLDialogElement | null;
+  document.querySelector("[data-size-guide-open]")?.addEventListener("click", () => sizeGuide?.showModal());
+  document.querySelector("[data-size-guide-close]")?.addEventListener("click", () => sizeGuide?.close());
+  sizeGuide?.addEventListener("click", (e) => {
+    if (e.target === sizeGuide) sizeGuide.close();
+  });
 </script>
 
 <style>
-    /* Prevent layout shift during image switch */
-    #main-image {
-        will-change: opacity, transform;
+  /* Mobil: vandret galleri man swiper i. Desktop: billederne står i et gitter og ruller med siden. */
+  .gallery {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+  }
+
+  .gallery-cell {
+    position: relative;
+    flex: 0 0 86%;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    background: var(--surface);
+    scroll-snap-align: start;
+  }
+
+  .gallery-cell:only-child {
+    flex-basis: 100%;
+  }
+
+  .gallery-cell img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+
+  @media (min-width: 1024px) {
+    .gallery {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      overflow: visible;
     }
 
-    summary::-webkit-details-marker {
-        display: none;
+    .gallery-cell.is-wide {
+      grid-column: span 2;
+      aspect-ratio: 3 / 2;
     }
 
-    /* Smooth accordion expand/collapse */
-    .accordion-content {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease;
-    }
 
-    .accordion.open .accordion-content {
-        max-height: min(400px, 60vh);
-    }
+  }
 
-    .accordion.open .accordion-icon {
-        transform: rotate(45deg);
-    }
+  /* Farveskift: det nye galleri tones roligt ind */
+  [data-gallery] {
+    animation: gallery-in 0.35s ease both;
+  }
 
-    /* Size buttons - ensure clickable and good touch targets */
-    #size-buttons-container .size-btn {
-        pointer-events: auto;
-        -webkit-tap-highlight-color: transparent;
+  @keyframes gallery-in {
+    from {
+      opacity: 0;
     }
+  }
 
-    /* Selected state - explicit CSS so it always sticks (avoids Tailwind class order issues) */
-    #size-buttons-container .size-btn[data-selected="true"] {
-        border-color: rgb(6 182 212);
-        color: rgb(255 255 255);
-    }
+  .size-name[data-missing] {
+    color: var(--warn) !important;
+  }
 
-    .color-btn[data-selected="true"] {
-        border-color: rgb(6 182 212);
-        color: rgb(255 255 255);
-    }
+  .swatch {
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 999px;
+    border: 1px solid rgb(128 128 128 / 0.6);
+  }
 
-    .size-guide-dialog {
-        margin: auto;
-        padding: 0;
-        border: 1px solid rgb(255 255 255 / 0.1);
-        border-radius: 0.75rem;
-        background: #07151b;
-        color: #fff;
-        max-width: min(36rem, calc(100vw - 2rem));
-        width: 100%;
-    }
+  .acc {
+    border-top: 1px solid var(--line);
+  }
 
-    .size-guide-dialog::backdrop {
-        background: rgb(0 0 0 / 0.55);
-    }
+  .acc:last-of-type {
+    border-bottom: 1px solid var(--line);
+  }
 
-    @media (hover: none) {
-        #gallery-thumbnails .thumbnail-img {
-            opacity: 0.85;
-        }
+  .acc summary {
+    display: flex;
+    min-height: 3.5rem;
+    cursor: pointer;
+    list-style: none;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 500;
+  }
+
+  .acc summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .acc summary::after {
+    content: "+";
+    font-size: 1.125rem;
+    color: var(--ink-mute);
+    transition: transform 0.3s var(--ease-out);
+  }
+
+  .acc[open] summary::after {
+    transform: rotate(45deg);
+  }
+
+  .acc-body {
+    padding-bottom: 1.5rem;
+    font-size: 0.9375rem;
+    color: var(--ink-dim);
+  }
+
+  @media (min-width: 1024px) {
+    .buybar {
+      display: none !important;
     }
+  }
+
+  .buybar {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem max(0.75rem, env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-top: 1px solid var(--line);
+    transform: translateY(110%);
+    transition: transform 0.4s var(--ease-out);
+  }
+
+  .buybar.is-in {
+    transform: none;
+  }
+
+  .size-guide {
+    width: min(32rem, calc(100vw - 2rem));
+    margin: auto;
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  .size-guide::backdrop {
+    background: rgb(3 5 7 / 0.72);
+  }
 </style>

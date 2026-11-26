@@ -1,183 +1,125 @@
 ---
-const formSubmitRecipient = import.meta.env.PUBLIC_FORMSUBMIT_RECIPIENT?.trim() || "8713123e93f6baf78af5e327439c1129";
+const formSubmitRecipient =
+  import.meta.env.PUBLIC_FORMSUBMIT_RECIPIENT?.trim() || "8713123e93f6baf78af5e327439c1129";
 const useFormSubmit = Boolean(formSubmitRecipient);
 const siteBase = import.meta.env.SITE?.replace(/\/$/, "") ?? "";
-const newsletterAction = useFormSubmit ? `https://formsubmit.co/${encodeURIComponent(formSubmitRecipient)}` : undefined;
-const newsletterNext = useFormSubmit && siteBase ? `${siteBase}/` : "";
+const newsletterAction = useFormSubmit
+  ? `https://formsubmit.co/${encodeURIComponent(formSubmitRecipient)}`
+  : undefined;
+const newsletterNext = useFormSubmit && siteBase ? `${siteBase}/?tilmeldt=1` : "";
+
+const links = [
+  { href: "/#shop", label: "Shop" },
+  { href: "/shipping#size-guide", label: "Størrelsesguide" },
+  { href: "/shipping", label: "Fragt og returnering" },
+  { href: "/contact", label: "Kontakt" },
+  { href: "https://instagram.com/boelgen.studio", label: "Instagram", external: true },
+];
 ---
 
-<footer class="relative z-10 bg-[#000d12] pt-16 sm:pt-32 pb-[max(3rem,calc(1rem+env(safe-area-inset-bottom)))] border-t border-white/5 rounded-t-3xl">
-    {/* Atmospheric Background Glow */}
-    <div
-        class="absolute inset-0 pointer-events-none overflow-hidden opacity-30"
-    >
-        <div
-            class="absolute bottom-0 left-[20%] w-[60%] h-[40%] bg-cyan-900/10 blur-[120px] rounded-full"
-        >
-        </div>
+<!-- Broderiet vendt om: hvid skrift på trådens blå -->
+<footer class="site-footer" data-theme="sort">
+  <div class="wrap grid gap-12 py-16 sm:py-20 lg:grid-cols-12 lg:gap-10">
+    <div class="lg:col-span-6">
+      <h2 class="text-2xl font-semibold sm:text-3xl">Få besked om næste kollektion</h2>
+      <form
+        name="newsletter"
+        method="POST"
+        class="mt-6 flex max-w-md items-end gap-4"
+        {...useFormSubmit
+          ? { action: newsletterAction }
+          : { "data-netlify": "true", "netlify-honeypot": "newsletter-bot" }}
+      >
+        {
+          useFormSubmit ? (
+            <>
+              <input type="hidden" name="_subject" value="Nyhedsbrev — Bølgen Studio" />
+              {newsletterNext && <input type="hidden" name="_next" value={newsletterNext} />}
+            </>
+          ) : (
+            <>
+              <input type="hidden" name="form-name" value="newsletter" />
+              <p class="hidden">
+                <label>
+                  Udfyld ikke dette: <input name="newsletter-bot" />
+                </label>
+              </p>
+            </>
+          )
+        }
+        <label class="flex-1">
+          <span class="sr-only">E-mailadresse</span>
+          <input type="email" name="email" required autocomplete="email" placeholder="din@email.dk" class="field" />
+        </label>
+        <button type="submit" class="btn footer-btn !min-h-[3rem] px-6">Tilmeld</button>
+      </form>
+      <p class="mt-4 max-w-md text-sm text-white/75">
+        Vi skriver kun, når der kommer noget nyt. Se <a href="/privacy" class="link">privatlivspolitikken</a>.
+      </p>
     </div>
 
-    <div class="container mx-auto px-4 sm:px-6 relative z-10">
-        <div
-            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 sm:gap-16 mb-16 sm:mb-32"
-        >
-            {/* Brand Section */}
-            <div class="space-y-8">
-                <img
-                    src="/logo-bolgen.svg"
-                    alt="Bølgen Studio"
-                    class="h-8 brightness-0 invert opacity-80"
-                />
-                <p
-                    class="text-white/40 text-sm leading-relaxed tracking-wide font-light italic"
-                >
-                    Sommer. Havet. Venner.<br />Designet i København.
-                </p>
-                <div class="flex gap-6">
-                    <a
-                        href="https://instagram.com/boelgen.studio"
-                        target="_blank"
-                        class="text-white/20 hover:text-cyan-400 transition-colors duration-500 p-2 -m-2 min-h-[44px] min-w-[44px] inline-flex items-center justify-center touch-manipulation"
-                    >
-                        <img
-                            src="/logo-instagram.svg"
-                            alt="Instagram"
-                            class="w-5 h-5 brightness-0 invert opacity-40 hover:opacity-100 transition-opacity"
-                        />
-                    </a>
-                </div>
-            </div>
+    <nav class="lg:col-span-5 lg:col-start-8" aria-label="Sidefod">
+      <ul class="grid grid-cols-2 gap-x-8 gap-y-1 text-lg">
+        {
+          links.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="inline-flex min-h-[2.75rem] items-center hover:underline hover:underline-offset-4"
+                {...("external" in link ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
 
-            {/* Shop Links */}
-            <div class="space-y-6">
-                <h4
-                    class="text-white/80 text-sm tracking-[0.06em] font-light"
-                >
-                    Kollektion
-                </h4>
-                <ul class="space-y-4">
-                    <li>
-                        <a
-                            href="/#shop"
-                            class="text-white/30 hover:text-white transition-colors text-sm tracking-[0.04em] font-light min-h-[44px] inline-flex items-center touch-manipulation"
-                            >Alle stykker</a
-                        >
-                    </li>
-                    
-                    <li>
-                        <a
-                            href="#"
-                            class="text-white/30 hover:text-white transition-colors text-sm tracking-[0.04em] font-light min-h-[44px] inline-flex items-center touch-manipulation"
-                            >Sommer essentials</a
-                        >
-                    </li>
-                </ul>
-            </div>
+  <div class="wrap">
+    <span class="wordmark w-full" aria-hidden="true"></span>
+  </div>
 
-            {/* Information */}
-            <div class="space-y-6">
-                <h4
-                    class="text-white/80 text-sm tracking-[0.06em] font-light"
-                >
-                    Service
-                </h4>
-                <ul class="space-y-4">
-                    <li>
-                        <a
-                            href="/shipping"
-                            class="text-white/30 hover:text-white transition-colors text-sm tracking-[0.04em] font-light min-h-[44px] inline-flex items-center touch-manipulation"
-                            >Fragt & returnering</a
-                        >
-                    </li>
-                    <li>
-                        <a
-                            href="/shipping#size-guide"
-                            class="text-white/30 hover:text-white transition-colors text-sm tracking-[0.04em] font-light min-h-[44px] inline-flex items-center touch-manipulation"
-                            >Størrelsesguide</a
-                        >
-                    </li>
-                    <li>
-                        <a
-                            href="/contact"
-                            class="text-white/30 hover:text-white transition-colors text-sm tracking-[0.04em] font-light min-h-[44px] inline-flex items-center touch-manipulation"
-                            >Kontakt</a
-                        >
-                    </li>
-                </ul>
-            </div>
-
-            {/* Newsletter */}
-            <div class="space-y-8">
-                <h4
-                    class="text-white/80 text-sm tracking-[0.06em] font-light"
-                >
-                    Opdateringer
-                </h4>
-                <p
-                    class="text-white/30 text-sm tracking-[0.04em] leading-relaxed font-light"
-                >
-                    Tilmeld dig Bølgen for tidlig adgang til fremtidige
-                    kollektioner.
-                </p>
-                <form
-                    name="newsletter"
-                    method="POST"
-                    {...(useFormSubmit
-                        ? { action: newsletterAction }
-                        : {
-                              "data-netlify": "true",
-                              "netlify-honeypot": "newsletter-bot",
-                          })}
-                    class="relative group"
-                >
-                    {useFormSubmit ? (
-                        <>
-                            <input type="hidden" name="_subject" value="Nyhedsbrev — Bølgen Studio" />
-                            {newsletterNext ? <input type="hidden" name="_next" value={newsletterNext} /> : null}
-                        </>
-                    ) : (
-                        <>
-                            <input type="hidden" name="form-name" value="newsletter" />
-                            <p class="hidden">
-                                <label>Udfyld ikke dette: <input name="newsletter-bot" /></label>
-                            </p>
-                        </>
-                    )}
-                    <input
-                        type="email"
-                        name="email"
-                        required
-                        placeholder="E-mailadresse"
-                        class="w-full bg-transparent border-b border-white/10 py-3 text-[16px] sm:text-sm tracking-[0.04em] text-white placeholder:text-white/20 focus:outline-none focus:border-cyan-500/40 transition-colors font-light"
-                    />
-                    <button
-                        type="submit"
-                        class="absolute right-0 bottom-3 text-white/20 hover:text-white transition-colors text-sm tracking-wide font-light min-h-[44px] px-1 touch-manipulation"
-                        >Tilmeld</button
-                    >
-                </form>
-            </div>
-        </div>
-
-        {/* Bottom Detail */}
-        <div
-            class="flex flex-col md:flex-row justify-between items-center gap-6 sm:gap-8 pt-8 border-t border-white/5"
-        >
-            <p class="text-xs text-white/10 tracking-[0.06em] font-light text-center md:text-left">
-                Bølgen Studio © 2026
-            </p>
-            <div class="flex flex-wrap justify-center gap-6 sm:gap-12">
-                <a
-                    href="/privacy"
-                    class="text-xs text-white/10 hover:text-white/30 transition-colors tracking-[0.04em] font-light min-h-[44px] inline-flex items-center touch-manipulation"
-                    >Privatlivspolitik</a
-                >
-                <a
-                    href="/terms"
-                    class="text-xs text-white/10 hover:text-white/30 transition-colors tracking-[0.04em] font-light min-h-[44px] inline-flex items-center touch-manipulation"
-                    >Vilkår</a
-                >
-            </div>
-        </div>
-    </div>
+  <div class="wrap flex flex-col items-center justify-between gap-2 py-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-sm text-white/75 sm:flex-row">
+    <p>© {new Date().getFullYear()} Bølgen Studio, København</p>
+    <ul class="flex gap-6">
+      <li><a href="/privacy" class="inline-flex min-h-[2.5rem] items-center hover:text-white">Privatlivspolitik</a></li>
+      <li><a href="/terms" class="inline-flex min-h-[2.5rem] items-center hover:text-white">Salgsvilkår</a></li>
+    </ul>
+  </div>
 </footer>
+
+<style>
+  .site-footer {
+    background: rgb(31 92 204);
+    color: #fff;
+  }
+
+  .site-footer .field {
+    color: #fff;
+    border-color: rgb(255 255 255 / 0.6);
+  }
+
+  .site-footer .field::placeholder {
+    color: rgb(255 255 255 / 0.65);
+  }
+
+  .site-footer .field:focus {
+    border-color: #fff;
+  }
+
+  .site-footer :focus-visible {
+    outline-color: #fff;
+  }
+
+  .footer-btn {
+    background: #fff;
+    color: rgb(31 92 204);
+  }
+
+  .footer-btn:hover {
+    background: rgb(14 27 61);
+    color: #fff;
+  }
+</style>

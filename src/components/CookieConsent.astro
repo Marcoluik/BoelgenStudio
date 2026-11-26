@@ -1,84 +1,77 @@
 ---
-// Cookie consent banner - stores preference in localStorage
-// Only shows analytics/optional cookies after user accepts
+// Cookie-samtykke: valget gemmes i localStorage ("accepted" / "declined").
+// Analyse-scripts må først indlæses, når valget er "accepted" (se accept()).
 ---
 
 <div
   id="cookie-consent"
-  class="fixed bottom-0 left-0 right-0 z-[90] p-4 sm:p-6 pb-[max(1rem,env(safe-area-inset-bottom))] pointer-events-none invisible"
+  class="cookie pointer-events-none invisible fixed inset-x-0 bottom-0 z-[90] p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:inset-x-auto sm:left-4 sm:p-0 sm:pb-4"
+  role="region"
+  aria-label="Cookies"
 >
-  <div
-    class="max-w-2xl mx-auto bg-[#001c25] border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl pointer-events-auto opacity-0 translate-y-4 transition-all duration-700 cookie-panel"
-  >
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
-      <div>
-        <p class="text-white/80 text-sm font-light tracking-wide leading-relaxed">
-          Vi bruger cookies til at forbedre din oplevelse og analysere trafik. Ved at fortsætte accepterer du vores brug af cookies.
-          <a href="/privacy" class="text-cyan-400/80 hover:text-cyan-400 transition-colors">Privatlivspolitik</a>
-        </p>
-      </div>
-      <div class="flex gap-3 sm:shrink-0">
-        <button
-          id="cookie-accept"
-          class="px-6 py-3 min-h-[44px] border border-cyan-500/40 rounded-xl text-cyan-400 text-sm font-light tracking-[0.04em] hover:bg-cyan-400/10 transition-colors duration-500 touch-manipulation"
-        >
-          Accepter
-        </button>
-        <button
-          id="cookie-decline"
-          class="px-6 py-3 min-h-[44px] border border-white/10 rounded-xl text-white/50 text-sm font-light tracking-[0.04em] hover:text-white/80 hover:border-white/20 transition-colors duration-500 touch-manipulation"
-        >
-          Afvis
-        </button>
-      </div>
+  <div class="cookie-panel pointer-events-auto max-w-sm border bg-surface p-5 hairline">
+    <p class="text-sm text-ink-dim">
+      Vi bruger cookies til at forbedre din oplevelse og analysere trafik.
+      <a href="/privacy" class="link text-ink">Privatlivspolitik</a>
+    </p>
+    <div class="mt-4 flex gap-2">
+      <button id="cookie-accept" type="button" class="btn btn-primary !min-h-[2.75rem] flex-1 px-4 text-sm">Accepter</button>
+      <button id="cookie-decline" type="button" class="btn btn-ghost !min-h-[2.75rem] flex-1 px-4 text-sm">Afvis</button>
     </div>
   </div>
 </div>
 
 <script>
+  const KEY = "bolgen-cookie-consent";
   const banner = document.getElementById("cookie-consent");
-  const panel = banner?.querySelector(".cookie-panel");
-  const acceptBtn = document.getElementById("cookie-accept");
-  const declineBtn = document.getElementById("cookie-decline");
 
-  const COOKIE_CONSENT_KEY = "bolgen-cookie-consent";
-
-  function hideBanner() {
-    if (!banner || !panel) return;
-    panel.classList.add("opacity-0", "translate-y-4");
-    setTimeout(() => banner.classList.add("invisible"), 300);
+  function hide() {
+    banner?.classList.remove("is-in");
+    setTimeout(() => banner?.classList.add("invisible"), 400);
   }
 
-  function accept() {
-    localStorage.setItem(COOKIE_CONSENT_KEY, "accepted");
-    hideBanner();
-    // Here you would enable analytics (e.g. gtag, Plausible)
-    // if (window.plausible) window.plausible('Cookie consent', { props: { consent: 'accepted' } });
-  }
-
-  function decline() {
-    localStorage.setItem(COOKIE_CONSENT_KEY, "declined");
-    hideBanner();
+  function choose(value: "accepted" | "declined") {
+    try {
+      localStorage.setItem(KEY, value);
+    } catch {
+      /* ignorer */
+    }
+    hide();
+    // Her kan analyse slås til, når value === "accepted"
   }
 
   function init() {
-    if (localStorage.getItem(COOKIE_CONSENT_KEY)) {
-      return;
+    let stored: string | null = null;
+    try {
+      stored = localStorage.getItem(KEY);
+    } catch {
+      /* ignorer */
     }
-    if (!banner || !panel) return;
+    if (stored || !banner) return;
     banner.classList.remove("invisible");
-    requestAnimationFrame(() => {
-      panel?.classList.remove("opacity-0", "translate-y-4");
-    });
+    requestAnimationFrame(() => banner.classList.add("is-in"));
   }
 
-  acceptBtn?.addEventListener("click", accept);
-  declineBtn?.addEventListener("click", decline);
+  document.getElementById("cookie-accept")?.addEventListener("click", () => choose("accepted"));
+  document.getElementById("cookie-decline")?.addEventListener("click", () => choose("declined"));
 
-  // Show after a short delay so it doesn't block initial load
-  if (document.readyState === "complete") {
-    setTimeout(init, 1500);
-  } else {
-    window.addEventListener("load", () => setTimeout(init, 1500));
-  }
+  // Vent lidt, så banneret ikke konkurrerer med første indtryk
+  if (document.readyState === "complete") setTimeout(init, 1800);
+  else window.addEventListener("load", () => setTimeout(init, 1800));
 </script>
+
+<style>
+  .cookie-panel {
+    box-shadow: 0 20px 60px rgb(0 0 0 / 0.6);
+    opacity: 0;
+    transform: translateY(1rem);
+    transition:
+      opacity 0.4s var(--ease-out),
+      transform 0.4s var(--ease-out);
+  }
+
+  .cookie.is-in .cookie-panel {
+    opacity: 1;
+    transform: none;
+  }
+</style>

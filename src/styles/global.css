@@ -1,0 +1,302 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Sideskift: en kort, rolig overtoning af hele siden. Ingen elementer flyver mellem siderne. */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.22s;
+  animation-timing-function: ease;
+}
+
+/*
+ * Siden er farvet som hoodien: hvid bomuld med broderiets blå tråd som "blæk".
+ * data-theme="sort" vender den til den sorte hoodie med samme blå tråd.
+ * Temaet kan sættes på <html> (produktsiden) eller på en enkelt sektion (hero, den sorte
+ * halvdel af shoppen).
+ */
+:root,
+[data-theme="hvid"] {
+  --ground-rgb: 245 246 244; /* bomuld i blitzlys */
+  --surface-rgb: 234 236 233;
+  --surface-2-rgb: 220 223 220;
+  --ink-rgb: 14 27 61; /* dybt havblå i stedet for sort */
+  --ink-dim-rgb: 52 65 99;
+  --ink-mute-rgb: 96 107 135;
+  --thread-rgb: 31 92 204; /* broderiet */
+  --button-rgb: 31 92 204;
+  --line: rgb(14 27 61 / 0.14);
+  --line-strong: rgb(14 27 61 / 0.3);
+  --warn: #a35a00;
+  color-scheme: light;
+}
+
+[data-theme="sort"] {
+  --ground-rgb: 6 6 7;
+  --surface-rgb: 18 18 20;
+  --surface-2-rgb: 30 30 33;
+  --ink-rgb: 245 246 244;
+  --ink-dim-rgb: 196 198 197;
+  --ink-mute-rgb: 142 144 146;
+  --thread-rgb: 99 148 245;
+  --button-rgb: 31 92 204;
+  --line: rgb(245 246 244 / 0.14);
+  --line-strong: rgb(245 246 244 / 0.3);
+  --warn: #f2b256;
+  color-scheme: dark;
+}
+
+:root {
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --nav-h: 4rem;
+}
+
+/* Afledte farver skal følge temaet, også når det er sat på en sektion */
+:root,
+[data-theme] {
+  --ground: rgb(var(--ground-rgb));
+  --surface: rgb(var(--surface-rgb));
+  --surface-2: rgb(var(--surface-2-rgb));
+  --ink: rgb(var(--ink-rgb));
+  --ink-dim: rgb(var(--ink-dim-rgb));
+  --ink-mute: rgb(var(--ink-mute-rgb));
+  --thread: rgb(var(--thread-rgb));
+  --button: rgb(var(--button-rgb));
+}
+
+@media (min-width: 768px) {
+  :root {
+    --nav-h: 4.5rem;
+  }
+}
+
+@layer base {
+  html {
+    background: var(--ground);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-padding-top: calc(var(--nav-h) + 1rem);
+  }
+
+  body {
+    @apply bg-ground font-sans text-ink antialiased;
+    min-height: 100dvh;
+    font-size: 1rem;
+    line-height: 1.5;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* En sektion med eget tema får temaets bund og tekstfarve */
+  [data-theme] {
+    background-color: var(--ground);
+    color: var(--ink);
+  }
+
+  ::selection {
+    background: var(--button);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--thread);
+    outline-offset: 3px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  img,
+  video {
+    max-width: 100%;
+  }
+
+  dialog {
+    color: var(--ink);
+  }
+
+  /* hidden skal vinde over display-klasser som .flex */
+  [hidden] {
+    display: none !important;
+  }
+}
+
+/* Farveskift på produktsiden: hele siden skifter roligt mellem hvid og sort */
+html.theme-fade,
+html.theme-fade body,
+html.theme-fade .site-nav {
+  transition:
+    background-color 0.45s ease,
+    color 0.45s ease;
+}
+
+/* Blød rulning til ankre, men først når siden er indlæst. Ellers ruller en side, der åbnes
+   på fx /#shop, synligt ned gennem hele forsiden. Klassen sættes i Layout.astro. */
+html.smooth {
+  scroll-behavior: smooth;
+}
+
+@layer components {
+  .wrap {
+    @apply mx-auto w-full max-w-site px-4 sm:px-6 lg:px-10;
+  }
+
+  /* Lille, afdæmpet tekst til etiketter og billedtekster */
+  .label {
+    @apply text-[0.875rem] leading-snug text-ink-mute;
+  }
+
+  /* Overskrifter: smal og tung, i trådens blå. Samme familie som brødteksten, bare smallere. */
+  .display {
+    @apply font-sans leading-[0.92];
+    font-stretch: 68%;
+    font-weight: 750;
+    letter-spacing: -0.005em;
+    word-spacing: 0.08em;
+    color: var(--thread);
+  }
+
+  /* Wordmarket tegnes som maske, så det tager tekstfarven og følger temaet */
+  .wordmark {
+    display: block;
+    aspect-ratio: 850 / 381;
+    background-color: currentColor;
+    -webkit-mask: url("/logo-bolgen.svg") center / contain no-repeat;
+    mask: url("/logo-bolgen.svg") center / contain no-repeat;
+  }
+
+  .btn {
+    @apply inline-flex min-h-[3.25rem] select-none items-center justify-center gap-3 px-7 text-base font-semibold;
+    border-radius: 999px;
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease;
+    touch-action: manipulation;
+  }
+
+  .btn:disabled {
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--button);
+    color: #fff;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    background: var(--ink);
+    color: var(--ground);
+  }
+
+  .btn-primary:disabled {
+    background: var(--surface-2);
+    color: var(--ink-mute);
+  }
+
+  .btn-ghost {
+    @apply border text-ink;
+    border-color: var(--line-strong);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    border-color: var(--ink);
+  }
+
+  .link {
+    @apply underline underline-offset-4;
+    text-decoration-color: var(--line-strong);
+    transition: text-decoration-color 0.2s;
+  }
+
+  .link:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .field {
+    @apply w-full border-0 border-b bg-transparent px-0 py-3 text-base text-ink placeholder:text-ink-mute;
+    border-color: var(--line-strong);
+    border-radius: 0;
+    transition: border-color 0.2s;
+  }
+
+  .field:focus {
+    outline: none;
+    border-color: var(--thread);
+  }
+
+  .hairline {
+    border-color: var(--line);
+  }
+
+  /* Størrelses- og farveknapper */
+  .chip {
+    @apply relative inline-flex h-12 min-w-[3.25rem] cursor-pointer select-none items-center justify-center border px-4 text-base font-semibold text-ink;
+    border-color: var(--line-strong);
+    border-radius: 999px;
+    transition:
+      background-color 0.15s,
+      color 0.15s,
+      border-color 0.15s;
+    touch-action: manipulation;
+  }
+
+  .chip:hover {
+    border-color: var(--ink);
+  }
+
+  .chip[aria-checked='true'],
+  .chip[aria-pressed='true'] {
+    border-color: var(--ink);
+    background: var(--ink);
+    color: var(--ground);
+  }
+
+  .chip[data-soldout='true'] {
+    @apply cursor-not-allowed text-ink-mute;
+    border-color: var(--line);
+    text-decoration: line-through;
+  }
+
+  .chip[data-busy='true'] {
+    border-color: var(--button);
+    background: var(--button);
+    color: #fff;
+  }
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.smooth {
+    scroll-behavior: auto;
+  }
+
+  @view-transition {
+    navigation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

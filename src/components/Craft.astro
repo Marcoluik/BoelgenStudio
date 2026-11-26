@@ -1,0 +1,121 @@
+---
+import { getPicByPath } from "../lib/images";
+
+interface Props {
+  productHref: string;
+}
+
+const { productHref } = Astro.props;
+
+const embroidery = await getPicByPath("sort/kaligrafi.jpg", "Kaligrafien broderet i blå tråd på ryggen af den sorte hoodie");
+const wrist = await getPicByPath("hvid/wrist.jpg", "Bølgelogoet broderet ved håndleddet på den hvide hoodie");
+---
+
+<section class="py-20 sm:py-28">
+  <div class="wrap grid gap-14 lg:grid-cols-12 lg:gap-10">
+    <div class="lg:col-span-5">
+      <h2 class="display text-[clamp(3rem,7vw,5.5rem)]">To lag bomuld med luft imellem</h2>
+      <p class="mt-6 max-w-md text-lg text-ink-dim">
+        Mange hoodies er bare tykke. Den her er syet i to lag, så der ligger et luftlag mellem yder- og inderstof.
+        Luften isolerer, og derfor holder trøjen varmen, også når det blæser over 10 m/s på åbent vand.
+      </p>
+
+      <!-- Tværsnit af stoffet. Lagenes højde følger vægten: 370 mod 280 gsm. -->
+      <figure class="layers mt-10 max-w-md" aria-label="Tværsnit af hoodiens to stoflag">
+        <figcaption class="label mb-2">Ude: vind og vejr</figcaption>
+        <div class="layer layer-outer">
+          <span>Yderstof</span>
+          <span>370 gsm</span>
+        </div>
+        <div class="layer-air">
+          <span>Luftlag</span>
+        </div>
+        <div class="layer layer-inner">
+          <span>Inderstof</span>
+          <span>280 gsm</span>
+        </div>
+        <p class="label mt-2">Inde: dig</p>
+      </figure>
+
+      <a href={productHref} class="btn btn-primary mt-10">Se hoodien</a>
+    </div>
+
+    <div class="grid grid-cols-5 items-start gap-3 sm:gap-5 lg:col-span-7">
+      {
+        embroidery && (
+          <figure class="col-span-5">
+            <img
+              src={embroidery.src}
+              srcset={embroidery.srcset}
+              sizes="(min-width: 1024px) 55vw, 100vw"
+              width={embroidery.width}
+              height={embroidery.height}
+              alt={embroidery.alt}
+              loading="lazy"
+              decoding="async"
+              class="aspect-[3/2] w-full bg-surface object-cover"
+            />
+            <figcaption class="label mt-3">Kaligrafien er broderet på ryggen.</figcaption>
+          </figure>
+        )
+      }
+      {
+        wrist && (
+          <figure class="col-span-3 sm:col-span-2">
+            <img
+              src={wrist.src}
+              srcset={wrist.srcset}
+              sizes="(min-width: 1024px) 22vw, 60vw"
+              width={wrist.width}
+              height={wrist.height}
+              alt={wrist.alt}
+              loading="lazy"
+              decoding="async"
+              class="aspect-square w-full bg-surface object-cover"
+            />
+            <figcaption class="label mt-3">Bølgen sidder ved håndleddet.</figcaption>
+          </figure>
+        )
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .layer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-inline: 1.25rem;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  /* 370 og 280 gsm i samme målestok */
+  .layer-outer {
+    height: 5.55rem;
+    background: var(--button);
+  }
+
+  .layer-inner {
+    height: 4.2rem;
+    background: var(--ink);
+    color: var(--ground);
+  }
+
+  .layer-air {
+    display: flex;
+    height: 2.75rem;
+    align-items: center;
+    padding-inline: 1.25rem;
+    color: var(--ink-dim);
+    background-image: radial-gradient(circle, var(--line-strong) 1px, transparent 1.5px);
+    background-size: 10px 10px;
+  }
+
+  .layer-air span {
+    background: var(--ground);
+    padding-inline: 0.5rem;
+    margin-left: -0.5rem;
+  }
+</style>

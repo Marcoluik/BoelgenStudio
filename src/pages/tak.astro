@@ -1,0 +1,38 @@
+---
+import InfoPage from "../layouts/InfoPage.astro";
+---
+
+<InfoPage
+  title="Tak for din ordre | Bølgen Studio"
+  heading="Tak for din ordre"
+  description="Din ordre hos Bølgen Studio er modtaget."
+  intro="Betalingen er gennemført, og vi går i gang med at pakke."
+>
+  <section>
+    <h2>Hvad sker der nu?</h2>
+    <p>
+      Du får en kvittering på mail inden for få minutter. Vi sender din ordre hurtigst muligt, og levering i Danmark
+      tager typisk 2–4 hverdage.
+    </p>
+  </section>
+
+  <section>
+    <h2>Har du spørgsmål?</h2>
+    <p>
+      Mangler kvitteringen, eller vil du ændre noget ved ordren, så <a href="/contact">skriv til os</a>. Du har 14
+      dages returret; se <a href="/shipping">fragt &amp; returnering</a>.
+    </p>
+    <p><a href="/#shop">Tilbage til shoppen</a></p>
+  </section>
+</InfoPage>
+
+<script>
+  import { clearCart } from "../lib/cart";
+
+  // Stripe sender kunden hertil med session_id efter en gennemført betaling: tøm kurven
+  if (new URLSearchParams(window.location.search).has("session_id")) {
+    clearCart();
+    // Fjern id'et fra adresselinjen, så en genindlæsning ikke ligner et nyt køb
+    window.history.replaceState({}, "", window.location.pathname);
+  }
+</script>

@@ -1,0 +1,96 @@
+---
+import Layout from "./Layout.astro";
+
+interface Props {
+  title: string;
+  heading: string;
+  description: string;
+  eyebrow?: string;
+  intro?: string;
+  updated?: string;
+}
+
+const { title, heading, description, eyebrow = "Bølgen Studio", intro, updated } = Astro.props;
+---
+
+<Layout title={title} description={description}>
+  <main class="wrap pb-24 pt-[calc(var(--nav-h)+3.5rem)] sm:pb-32 sm:pt-[calc(var(--nav-h)+5.5rem)]">
+    <div class="grid gap-10 lg:grid-cols-12">
+      <header class="lg:col-span-5">
+        <h1 class="display text-[clamp(2.5rem,6vw,4.5rem)]">{heading}</h1>
+        {intro && <p class="mt-6 max-w-sm text-lg text-ink-dim">{intro}</p>}
+        {updated && <p class="label mt-6">Sidst opdateret {updated.toLowerCase()}</p>}
+      </header>
+      <div class="prose-info lg:col-span-6 lg:col-start-7">
+        <slot />
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style is:global>
+  .prose-info {
+    color: var(--ink-dim);
+  }
+
+  .prose-info > section + section {
+    margin-top: 2.5rem;
+  }
+
+  .prose-info h2 {
+    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 650;
+    color: var(--ink);
+  }
+
+  .prose-info p + p,
+  .prose-info p + ul {
+    margin-top: 0.75rem;
+  }
+
+  .prose-info ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+  }
+
+  .prose-info li + li {
+    margin-top: 0.35rem;
+  }
+
+  .prose-info a {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--line-strong);
+    text-underline-offset: 4px;
+  }
+
+  .prose-info a:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .prose-info table {
+    width: 100%;
+    margin-top: 1.25rem;
+    text-align: left;
+    border-collapse: collapse;
+  }
+
+  .prose-info th,
+  .prose-info td {
+    padding-block: 0.85rem;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.875rem;
+  }
+
+  .prose-info thead th {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--ink-mute);
+  }
+
+  .prose-info tbody th {
+    font-weight: 500;
+    color: var(--ink);
+  }
+</style>

@@ -1,199 +1,108 @@
 ---
+import "@fontsource-variable/archivo/wdth.css";
+import "../styles/global.css";
 import Cart from "../components/Cart.astro";
 import CookieConsent from "../components/CookieConsent.astro";
 import Footer from "../components/Footer.astro";
+import Navigation from "../components/Navigation.astro";
+import Toasts from "../components/Toasts.astro";
 
 interface Props {
   title: string;
   description?: string;
   image?: string;
-  preloadImage?: string;
+  /** Navigationen ligger gennemsigtig oven på en hero */
+  overlayNav?: boolean;
+  /** JSON-LD (schema.org) til søgemaskiner */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  ogType?: "website" | "product";
 }
 
 const {
   title,
-  description = "Sommer. Havet. Venner. Velkommen til Bølgen Studio.",
+  description = "Bølgen Studio laver tøj til livet ved havet. Tung dobbeltlags-hoodie med broderet kaligrafi. Designet i København.",
   image = "/hero-2-Gv_c13hE.jpeg",
-  preloadImage,
+  overlayNav = false,
+  jsonLd,
+  ogType = "website",
 } = Astro.props;
+
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const imageURL = new URL(image, Astro.site);
+const ldBlocks = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 ---
 
 <!doctype html>
 <html lang="da">
   <head>
     <meta charset="UTF-8" />
-    <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <script is:inline>
+      document.documentElement.classList.add("js");
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#f5f6f4" />
 
-    <!-- Primary Meta Tags -->
     <title>{title}</title>
-    <meta name="title" content={`${title}`} />
     <meta name="description" content={description} />
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content={canonicalURL} />
-    <meta property="og:title" content={`${title}`} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={new URL(image, Astro.site)} />
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={canonicalURL} />
-    <meta property="twitter:title" content={`${title}`} />
-    <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={new URL(image, Astro.site)} />
-
-    <!-- Canonical URL -->
     <link rel="canonical" href={canonicalURL} />
 
-    <!-- Fonts - Plus Jakarta Sans -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
-      rel="stylesheet"
-    />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content="Bølgen Studio" />
+    <meta property="og:locale" content="da_DK" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={imageURL} />
 
-    <!-- Performance: only preload images the current page actually needs -->
-    {preloadImage && <link rel="preload" as="image" href={preloadImage} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageURL} />
 
-    <!-- Theme color -->
-    <meta name="theme-color" content="#08979c" />
+    {ldBlocks.map((block) => <script type="application/ld+json" set:html={JSON.stringify(block)} />)}
+    <slot name="head" />
   </head>
-  <body class="antialiased">
-    <Cart />
-    <CookieConsent />
-    <slot />
+  <body>
+    <a
+      href="#indhold"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:bg-ink focus:px-4 focus:py-3 focus:text-ground"
+    >
+      Spring til indhold
+    </a>
+    <Navigation overlay={overlayNav} />
+    <div id="indhold">
+      <slot />
+    </div>
     <Footer />
+    <Cart />
+    <Toasts />
+    <CookieConsent />
+
     <script>
-      import { ScrollTrigger } from "gsap/ScrollTrigger";
+      // Blød rulning slås først til efter indlæsning (se global.css)
+      const enableSmooth = () => setTimeout(() => document.documentElement.classList.add("smooth"), 300);
+      if (document.readyState === "complete") enableSmooth();
+      else window.addEventListener("load", enableSmooth, { once: true });
 
-      // Shop scroll - works with ClientRouter (DOMContentLoaded doesn't fire on client nav)
-      function scrollToShop() {
-        const shop = document.getElementById("shop");
-        if (shop) shop.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-
-      document.addEventListener("click", (e) => {
-        const link = e.target.closest('a[href="#shop"], a[href="/#shop"]');
-        if (link) {
-          if (window.location.pathname === "/" || window.location.pathname === "") {
-            e.preventDefault();
-            scrollToShop();
-          }
+      // Når kurv eller størrelsesguide er åben, må baggrunden ikke rulle. Scrollbaren bliver
+      // stående (at skjule den får siden til at hoppe); i stedet stoppes rul, der ikke
+      // rammer et rullbart område inde i dialogen.
+      const blockBackgroundScroll = (e: Event) => {
+        const dialog = document.querySelector('dialog[open], .cart[data-open="true"]');
+        if (!dialog) return;
+        let el = e.target instanceof Element ? e.target : null;
+        while (el && el !== dialog && dialog.contains(el)) {
+          const canScroll =
+            el.scrollHeight > el.clientHeight + 1 && /(auto|scroll)/.test(getComputedStyle(el).overflowY);
+          if (canScroll) return;
+          el = el.parentElement;
         }
-      });
-
-      function initScroll() {
-        if (window.location.hash === "#shop") scrollToShop();
-        ScrollTrigger.refresh();
-      }
-      document.addEventListener("astro:after-swap", initScroll);
-      document.addEventListener("DOMContentLoaded", initScroll);
-      if (document.readyState !== "loading") initScroll();
-
-      window.addEventListener("cart-updated", (e) => {
-        const badge = document.getElementById("cart-count-badge");
-        const count = e.detail?.lineCount ?? 0;
-        if (badge) {
-          badge.textContent = String(count);
-          badge.classList.toggle("hidden", count === 0);
-        }
-      });
+        if (e.cancelable) e.preventDefault();
+      };
+      document.addEventListener("wheel", blockBackgroundScroll, { passive: false });
+      document.addEventListener("touchmove", blockBackgroundScroll, { passive: false });
     </script>
   </body>
 </html>
-
-<style is:global>
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  html {
-    scroll-behavior: smooth;
-    overflow-x: hidden;
-    overflow-y: auto;
-    height: 100%;
-    background-color: #000d12;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
-  }
-
-  body {
-    font-family:
-      "Plus Jakarta Sans",
-      -apple-system,
-      BlinkMacSystemFont,
-      "Segoe UI",
-      system-ui,
-      sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
-    overflow-y: auto;
-    background-color: #000d12;
-    font-weight: 300;
-    letter-spacing: 0.02em;
-    min-height: 100%;
-    min-height: 100svh;
-    min-height: 100dvh;
-    height: auto;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  /* Prevent horizontal overflow on mobile */
-  img, video {
-    max-width: 100%;
-    height: auto;
-  }
-
-  /* Hide scrollbar but keep functionality */
-  ::-webkit-scrollbar {
-    width: 0px;
-    background: transparent;
-  }
-
-  html {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  body {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  /* Selection color */
-  ::selection {
-    background-color: rgba(56, 189, 248, 0.3);
-    color: white;
-  }
-
-  /* Focus styles for accessibility - soft, rounded */
-  *:focus-visible {
-    outline: 2px solid rgba(56, 189, 248, 0.5);
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
-
-  /* Respect reduced-motion preferences on mobile and desktop */
-  @media (prefers-reduced-motion: reduce) {
-    html {
-      scroll-behavior: auto;
-    }
-
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-  }
-</style>

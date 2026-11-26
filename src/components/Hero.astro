@@ -1,147 +1,97 @@
 ---
+interface Props {
+  price?: string;
+}
 
+const { price } = Astro.props;
 ---
 
-<section class="hero-shell relative z-0 overflow-hidden">
-  <div class="hero-container sticky top-0 w-full overflow-hidden">
-    <div class="hero-visual absolute inset-0 h-full w-full pointer-events-none bg-black">
+<!-- Havet først: videoen og jeres egen håndskrift er det mest genkendelige ved Bølgen -->
+<section class="hero relative isolate flex flex-col overflow-hidden" data-theme="sort">
+  <div class="absolute inset-0 -z-10">
     <video
       autoplay
       muted
       loop
       playsinline
-      webkit-playsinline="true"
       preload="auto"
-      class="hero-video block w-full h-full object-cover"
-      id="hero-video"
+      class="hero-video h-full w-full object-cover"
+      aria-hidden="true"
+      tabindex="-1"
     >
       <source src="/hero-video.mp4" type="video/mp4" />
     </video>
+    <div class="hero-shade absolute inset-0"></div>
+  </div>
 
-    <div
-      class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40"
-    >
-    </div>
-    </div>
-
-    <div class="hero-seam absolute inset-x-0 bottom-0 h-28 sm:h-36 pointer-events-none z-20">
-    </div>
-
-    <div
-      class="hero-content relative z-50 flex flex-col items-center justify-center h-full text-center px-4 sm:px-6 pb-[max(1rem,env(safe-area-inset-bottom))]"
-    >
-      <img
-        src="/logo-bolgen.svg"
-        alt="Bølgen"
-        class="h-20 sm:h-32 md:h-48 mb-5 sm:mb-8 brightness-0 invert drop-shadow-[0_0_30px_rgba(255,255,255,0.4)]"
-      />
-
-      <h1
-        class="text-white text-xs sm:text-lg md:text-2xl font-light tracking-[0.06em] mb-6 sm:mb-12 flex flex-wrap items-center justify-center gap-x-2 sm:gap-x-4 gap-y-1 px-2"
-      >
-        Sommer <span class="text-white/30">·</span> Havet <span class="text-white/30">·</span> Venner
-      </h1>
-
-      <a
-        href="#shop"
-        class="group relative w-full max-w-[14rem] px-8 sm:px-12 py-3.5 sm:py-4 overflow-hidden border border-white/20 hover:border-white/50 transition-colors duration-500 rounded-full pointer-events-auto cursor-pointer backdrop-blur-sm touch-manipulation min-h-[44px] flex items-center justify-center"
-      >
-        <span
-          class="relative z-10 text-white text-sm tracking-[0.04em] font-light group-hover:text-cyan-50 transition-colors"
-          >Dyk ned</span
-        >
-        <div
-          class="absolute inset-0 bg-white/10 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out"
-        >
-        </div>
-      </a>
-    </div>
+  <div class="wrap flex flex-1 flex-col items-center justify-center pb-16 pt-[calc(var(--nav-h)+2rem)] text-center text-white">
+    <h1 class="hero-rise" style="--d: 0.1s">
+      <span class="wordmark mx-auto h-32 sm:h-52 lg:h-64" role="img" aria-label="Bølgen"></span>
+    </h1>
+    <p class="hero-rise mt-4 text-xl font-medium sm:mt-6 sm:text-2xl" style="--d: 0.25s">Sommer. Havet. Venner.</p>
+    <a href="#shop" class="btn hero-btn hero-rise mt-8 sm:mt-10" style="--d: 0.4s">
+      Se hoodien{price && <span class="font-normal opacity-70">{price}</span>}
+    </a>
   </div>
 </section>
 
 <script>
-  import gsap from "gsap";
-  import { ScrollTrigger } from "gsap/ScrollTrigger";
-  gsap.registerPlugin(ScrollTrigger);
+  const video = document.querySelector<HTMLVideoElement>(".hero-video");
+  if (video) {
+    const ready = () => video.classList.add("is-ready");
+    if (video.readyState >= 2) ready();
+    else video.addEventListener("loadeddata", ready, { once: true });
 
-  const heroVideo = document.getElementById("hero-video") as HTMLVideoElement | null;
-  if (heroVideo) {
-    const markReady = () => heroVideo.classList.add("is-ready");
-    heroVideo.addEventListener("loadeddata", markReady, { once: true });
-    heroVideo.addEventListener("canplay", markReady, { once: true });
-    heroVideo.addEventListener("playing", markReady, { once: true });
-    if (heroVideo.readyState >= 2) markReady();
-    heroVideo.play().catch(() => {});
-  }
-
-  ScrollTrigger.getById("hero-visual-fade")?.kill();
-  ScrollTrigger.getById("hero-content-fade")?.kill();
-
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!reduceMotion) {
-    gsap.to(".hero-visual", {
-      scrollTrigger: {
-        id: "hero-visual-fade",
-        trigger: ".hero-shell",
-        start: "top top",
-        end: "35% top",
-        scrub: true,
-      },
-      yPercent: -4,
-      scale: 1.05,
-      opacity: 0,
-      ease: "none",
-    });
-
-    gsap.to(".hero-content", {
-      scrollTrigger: {
-        id: "hero-content-fade",
-        trigger: ".hero-shell",
-        start: "top top",
-        end: "30% top",
-        scrub: true,
-      },
-      opacity: 0,
-      ease: "none",
-    });
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      video.removeAttribute("autoplay");
+      video.pause();
+    } else {
+      video.play().catch(() => {});
+    }
   }
 </script>
 
 <style>
-  .hero-shell,
-  .hero-container {
-    height: 100vh;
-    height: 100svh;
+  .hero {
     min-height: 100svh;
-  }
-
-  @media (min-width: 768px) {
-    .hero-shell,
-    .hero-container {
-      height: 100dvh;
-      min-height: 100dvh;
-    }
+    background: #04121f;
   }
 
   .hero-video {
     opacity: 0;
-    transition: opacity 320ms ease;
-    transform: translateZ(0);
-    backface-visibility: hidden;
-    will-change: opacity, transform;
+    transition: opacity 1.2s ease;
   }
 
   .hero-video.is-ready {
     opacity: 1;
   }
 
-  .hero-seam {
-    background: linear-gradient(
-      to bottom,
-      rgba(0, 13, 18, 0) 0%,
-      rgba(0, 13, 18, 0.28) 38%,
-      rgba(0, 13, 18, 0.72) 72%,
-      rgba(0, 13, 18, 1) 100%
-    );
+  /* Lidt mørkere i top og bund, så menu og tekst kan læses oven på vandet */
+  .hero-shade {
+    background: linear-gradient(to bottom, rgb(4 18 31 / 0.5) 0%, rgb(4 18 31 / 0.1) 30%, rgb(4 18 31 / 0.25) 100%);
+  }
+
+  .hero-btn {
+    background: #fff;
+    color: rgb(31 92 204);
+    min-width: 13rem;
+  }
+
+  .hero-btn:hover {
+    background: rgb(31 92 204);
+    color: #fff;
+  }
+
+  /* Sidens ene indgangsanimation */
+  .hero-rise {
+    animation: rise 1s var(--ease-out) both;
+    animation-delay: var(--d, 0s);
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(1.25rem);
+    }
   }
 </style>
