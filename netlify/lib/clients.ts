@@ -5,7 +5,6 @@
  *   DATABASE_URL            Postgres-forbindelse (Neon)
  *   STRIPE_SECRET_KEY       sk_test_... / sk_live_...
  *   STRIPE_WEBHOOK_SECRET   whsec_... (fra webhook-endpointet i Stripe)
- *   SITE_URL                fx https://bolgenstudio.dk (uden skråstreg til sidst)
  *   SHIPPING_FLAT_ORE       valgfri: fast fragtpris i øre
  *   FREE_SHIPPING_OVER_ORE  valgfri: gratis fragt fra dette beløb i øre
  */
@@ -28,10 +27,6 @@ export function stripe(): Stripe {
 
 export function webhookSecret(): string {
   return required("STRIPE_WEBHOOK_SECRET");
-}
-
-export function siteUrl(): string {
-  return required("SITE_URL").replace(/\/$/, "");
 }
 
 /** Heltal i øre fra en valgfri miljøvariabel; null hvis den ikke er sat eller er ugyldig. */
