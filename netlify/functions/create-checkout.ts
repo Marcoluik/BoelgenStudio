@@ -5,7 +5,7 @@
  * browseren sender kun variant-id og antal, så prisen ikke kan manipuleres.
  */
 import type Stripe from "stripe";
-import { db, isUuid, json, optionalOre, siteUrl, stripe } from "../lib/clients";
+import { db, isUuid, json, optionalOre, stripe } from "../lib/clients";
 
 export const config = { path: "/api/checkout" };
 
@@ -55,6 +55,7 @@ function shippingOptions(subtotalOre: number): Stripe.Checkout.SessionCreatePara
 export default async (req: Request): Promise<Response> => {
   if (req.method !== "POST") return json({ error: "method_not_allowed" }, 405);
 
+  const origin = new URL(req.url).origin;
   const lines = parseLines(await req.json().catch(() => null));
   if (!lines) return json({ error: "invalid_cart" }, 400);
 
@@ -99,8 +100,9 @@ export default async (req: Request): Promise<Response> => {
     phone_number_collection: { enabled: true },
     // Webhooken læser kurven herfra, når betalingen er gennemført
     metadata: { items: lines.map((l) => `${l.variantId}:${l.quantity}`).join("|") },
-    success_url: `${siteUrl()}/tak?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${siteUrl()}/`,
+    // Kunden sendes tilbage til det site, kurven blev sendt fra (også på en preview)
+    success_url: `${origin}/tak?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${origin}/`,
   });
 
   if (!session.url) return json({ error: "checkout_unavailable" }, 502);
